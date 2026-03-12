@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping">
+  <entity name="app\models\Customer" table="customer">
+    <id name="id" type="integer">
+      <generator strategy="AUTO"/>
+    </id>
+    <field name="name" type="string"/>
+    <field name="email" type="string"/>
+    <field name="created_at" type="datetime" nullable="true"/>
+    <one-to-many field="orders" target-entity="app\models\Order" mapped-by="customer"/>
+  </entity>
+</doctrine-mapping>

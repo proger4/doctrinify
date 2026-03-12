@@ -1,0 +1,46 @@
+models_path: 'tests/_data/mock/models'
+
+base_classes:
+  - 'app\\models\\BaseModel'
+
+doctrine_xml_path: 'tests/_output/generated/doctrine'
+generated_php_path: 'tests/_output/generated/classes'
+
+schema_path: 'tests/_data/mock/database/schema.sql'
+
+database:
+  dsn: 'mysql:host=localhost;dbname=mock_legacy'
+  username: 'root'
+  password: ''
+
+blacklist:
+  - 'app\\models\\Old*'
+  - 'app\\models\\Test*'
+
+flags:
+  best_effort: true
+  generate_doctrine_xml: true
+  generate_php_accessors: true
+  use_ast_parsing: true
+  dump_schemas: true
+
+primary_key_strategy: 'database'
+
+naming:
+  getter_prefix: 'get'
+  setter_prefix: 'set'
+  add_prefix: 'add'
+  remove_prefix: 'remove'
+  ucfirst: true
+
+project_profile:
+  doctrine_xml:
+    root_attributes:
+      xmlns: "http://doctrine-project.org/schemas/orm/doctrine-mapping"
+    filename_pattern: "{class}.orm.xml"
+  generated_php:
+    namespace: "generated\\classes"
+  regeneration:
+    strategy: "overwrite_all"
+    add_generated_marker: true
+    embed_diagnostics: false

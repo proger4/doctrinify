@@ -1,0 +1,25 @@
+@startuml
+actor Operator
+participant "GenerateCommand" as Cmd
+participant "OrmGeneratorService" as Svc
+participant "CodebaseLoader" as Codebase
+participant "ModelIntrospector" as ModelI
+participant "DatabaseIntrospector" as DbI
+participant "PipelineAnalyzer" as Analyzer
+participant "Codegen" as Codegen
+participant "ArtifactPersister" as Persist
+
+Operator -> Cmd: tools:orm:generate --config=config.yaml
+Cmd -> Svc: generate(config)
+Svc -> Codebase: load(config)
+Codebase --> Svc: config + classes
+Svc -> ModelI: introspect(models)
+Svc -> DbI: introspect(schema.sql)
+Svc -> Analyzer: analyze(introspection)
+Analyzer --> Svc: analysis + diagnostics
+Svc -> Codegen: generate XML/PHP
+Svc -> Persist: write artifacts + mismatch-report
+Persist --> Svc: output paths
+Svc --> Cmd: summary
+Cmd --> Operator: generated files + mismatch path
+@enduml

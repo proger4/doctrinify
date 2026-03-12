@@ -1,0 +1,6 @@
+suite_namespace: Tests\\Unit
+actor: UnitTester
+modules:
+  enabled:
+    - Asserts
+    - Filesystem

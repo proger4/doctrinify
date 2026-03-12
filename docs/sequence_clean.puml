@@ -1,0 +1,13 @@
+@startuml
+actor Operator
+participant "CleanCommand" as Cmd
+participant "OrmGeneratorService" as Svc
+participant "ArtifactPersister" as Persist
+
+Operator -> Cmd: tools:orm:clean --config=config.yaml
+Cmd -> Svc: clean(config)
+Svc -> Persist: clean(xmlOutputPath, phpOutputPath)
+Persist --> Svc: done
+Svc --> Cmd: success
+Cmd --> Operator: "Generated artifacts were cleaned."
+@enduml

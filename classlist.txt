@@ -1,0 +1,9 @@
+app\models\Customer
+app\models\Order
+app\models\OrderItem
+app\models\Product
+app\models\ProductCategory
+app\models\Category
+app\models\User
+app\models\Admin
+app\models\Moderator

@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Doctrinify\Command\AiTaskExecuteCommand;
+use Doctrinify\Command\BuildTaskReportCommand;
+use Doctrinify\Command\CleanCommand;
+use Doctrinify\Command\GenerateCommand;
+use Symfony\Component\Console\Application;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$application = new Application('Doctrinify');
+$application->add(new GenerateCommand());
+$application->add(new CleanCommand());
+$application->add(new AiTaskExecuteCommand());
+$application->add(new BuildTaskReportCommand());
+$application->run();

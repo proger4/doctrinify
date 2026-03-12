@@ -1,0 +1,34 @@
+# Dependencies
+/vendor/
+
+# Runtime and generated artifacts
+/generated/
+/var/
+/tests/_output/
+/tests/Support/_generated/
+
+# PHPUnit / Codeception / coverage caches
+/.phpunit.cache/
+.phpunit.result.cache
+/coverage/
+/coverage-*/
+
+# Static analysis / QA caches
+/.psalm/
+/.psalm-cache/
+/.phpstan/
+/.phpstan.cache
+/.php-cs-fixer.cache
+
+# IDE
+/.idea/
+/.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp

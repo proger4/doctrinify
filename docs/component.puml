@@ -1,0 +1,50 @@
+@startuml
+!include <C4/C4_Component>
+!include <C4/C4_Context>
+
+Person(dev, "Operator", "Runs CLI and decides rollout")
+
+System_Boundary(tool, "doctrinify") {
+    Component(cli, "Console Commands", "src/Command", "tools:orm:*, tools:ai:*, tools:report:*")
+    Component(ormSvc, "OrmGeneratorService", "src/Service", "Deterministic generation pipeline")
+
+    Component(codebase, "Codebase Loader", "src/Tools/Codebase", "Reads config + classlist")
+    Component(intro, "Introspection", "src/Tools/Introspection", "Model + DB introspection")
+    Component(analyze, "Pipeline Analyzer", "src/Tools/Analysis", "Resolves mapping and rejects unsafe relations")
+    Component(codegen, "Codegen", "src/Tools/Codegen", "Doctrine XML + PHP")
+    Component(persist, "Persister", "src/Tools/Persist", "Writes generated artifacts + mismatch-report")
+
+    Component(tasks, "Task Layer", "src/Tools/Tasks", "XLSX tasks, prompt rendering, diagnostics, artifact storage")
+    Component(report, "HTML Report Builder", "src/Tools/Tasks/Reporting", "Local report with filters")
+}
+
+System_Ext(models, "Sandbox Models", "tests/_data/mock/models")
+System_Ext(schema, "Sandbox Schema", "tests/_data/mock/database/schema.sql")
+System_Ext(genFs, "Generated Artifacts", "generated/*")
+System_Ext(taskBook, "Task Workbook", "src/Tools/Tasks/test.xlsx")
+System_Ext(taskFs, "Task Runtime", "var/tasks/*")
+
+Rel(dev, cli, "runs")
+
+Rel(cli, ormSvc, "tools:orm:*")
+Rel(ormSvc, codebase, "load")
+Rel(ormSvc, intro, "introspect")
+Rel(ormSvc, analyze, "analyze")
+Rel(ormSvc, codegen, "generate")
+Rel(ormSvc, persist, "persist")
+
+Rel(intro, models, "reads")
+Rel(intro, schema, "reads")
+Rel(persist, genFs, "writes")
+
+Rel(cli, tasks, "tools:ai:task-execute")
+Rel(tasks, taskBook, "reads TASKS/INPUTS/ARTIFACTS/PROMPTS")
+Rel(tasks, models, "sandbox:model:* refs")
+Rel(tasks, schema, "sandbox:schema ref")
+Rel(tasks, genFs, "sandbox:generated:* + mismatch-report")
+Rel(tasks, taskFs, "writes inputs/prompts/results")
+
+Rel(cli, report, "tools:report:build")
+Rel(report, taskFs, "reads results, writes html")
+
+@enduml
