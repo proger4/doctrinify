@@ -7,6 +7,7 @@ php bin/console list | egrep "tools:orm|tools:ai|tools:report"
 
 ## 2) Prepare clean generator state
 ```bash
+php bin/console tools:sandbox:prepare --clean
 php bin/console tools:orm:clean --config=config.yaml
 php bin/console tools:orm:generate --config=config.yaml
 ```
@@ -17,8 +18,8 @@ php bin/console tools:orm:generate --config=config.yaml
 
 ## 3) Verify generator output
 ```bash
-ls -R generated
-cat generated/doctrine/mismatch-report.txt
+ls -R sandbox
+cat sandbox/doctrine/mismatch-report.txt
 ```
 
 ## 4) Run AI diagnostics from main workbook
@@ -40,5 +41,5 @@ php bin/console tools:ai:task-execute --file=src/Tools/Tasks/test.xlsx --task-id
 ```
 
 ## Artifacts
-- Core: `generated/doctrine/*`, `generated/classes/*`, `generated/doctrine/mismatch-report.txt`
+- Core: `sandbox/doctrine/*`, `sandbox/models/*.php` (in-place AST), `sandbox/doctrine/mismatch-report.txt`
 - AI: `var/tasks/<task_set>/{inputs,prompts,results,reports}`

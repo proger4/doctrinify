@@ -9,9 +9,10 @@ final readonly class GeneratedArtifactSchema
     public function __construct(
         public string $className,
         public ?string $xmlFilename,
-        public ?string $phpFilename,
         public ?string $xml,
-        public ?string $php,
+        public ?PhpPersistInstructionSchema $phpInstruction,
+        public ?string $phpFilename = null,
+        public ?string $php = null,
     ) {
     }
 }

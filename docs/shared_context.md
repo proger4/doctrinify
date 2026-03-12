@@ -13,7 +13,7 @@ Last updated: 2026-03-13 (Europe/Moscow)
 - `tools:report:*` handles HTML visualization only.
 
 ## Sandbox-First AI Scenario
-1. Prepare sandbox inputs in `tests/_data/mock/models` and `tests/_data/mock/database/schema.sql`.
+1. Sync fixtures into runtime sandbox: `php bin/console tools:sandbox:prepare --clean` (`tests/_data/mock/models` -> `sandbox/models`).
 2. Run regular generator pipeline (`tools:orm:generate`).
 3. Run AI tasks from `src/Tools/Tasks/test.xlsx`.
 4. Build reports from `var/tasks/<task_set>/reports/*.html`.

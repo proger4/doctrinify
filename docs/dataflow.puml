@@ -2,16 +2,18 @@
 left to right direction
 
 rectangle "Sandbox Inputs" {
-    file "Models\ntests/_data/mock/models/*.php" as models
+    file "Runtime Models\nsandbox/models/*.php" as models
+    file "Fixture Models\ntests/_data/mock/models/*.php" as fixtures
     file "Schema\ntests/_data/mock/database/schema.sql" as schema
     file "Config\nconfig.yaml" as cfg
+    component "tools:sandbox:prepare" as prepCmd
 }
 
 rectangle "Core Generator (deterministic)" {
     component "tools:orm:generate" as genCmd
     component "OrmGeneratorService" as orm
-    database "Generated XML/PHP\ngenerated/*" as genOut
-    file "Mismatch Report\ngenerated/doctrine/mismatch-report.txt" as mismatch
+    database "Generated XML/PHP\nsandbox/*" as genOut
+    file "Mismatch Report\nsandbox/doctrine/mismatch-report.txt" as mismatch
 }
 
 rectangle "AI Sidecar" {
@@ -22,6 +24,8 @@ rectangle "AI Sidecar" {
     file "HTML Report\nvar/tasks/<task_set>/reports/*.html" as html
 }
 
+fixtures --> prepCmd
+prepCmd --> models
 models --> genCmd
 schema --> genCmd
 cfg --> genCmd

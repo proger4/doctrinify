@@ -14,15 +14,19 @@ final class CommandPipelineTest extends Unit
 {
     private string $projectRoot;
     private string $configPath;
+    private string $modelsSourceDir;
+    private string $modelsRuntimeDir;
     private string $xmlOutputDir;
-    private string $phpOutputDir;
 
     protected function _before(): void
     {
         $this->projectRoot = dirname(__DIR__, 2);
         $this->configPath = $this->projectRoot . '/tests/_data/mock/config.yaml';
+        $this->modelsSourceDir = $this->projectRoot . '/tests/_data/mock/models';
+        $this->modelsRuntimeDir = $this->projectRoot . '/tests/_output/sandbox/models';
         $this->xmlOutputDir = $this->projectRoot . '/tests/_output/generated/doctrine';
-        $this->phpOutputDir = $this->projectRoot . '/tests/_output/generated/classes';
+        $this->resetDirectory($this->modelsRuntimeDir);
+        $this->copyDir($this->modelsSourceDir, $this->modelsRuntimeDir);
 
         $this->runClean();
     }
@@ -40,9 +44,9 @@ final class CommandPipelineTest extends Unit
         $this->assertStringContainsString('Mismatch report:', $output);
 
         $xmlFiles = glob($this->xmlOutputDir . '/*.orm.xml') ?: [];
-        $phpFiles = glob($this->phpOutputDir . '/*.php') ?: [];
+        $phpFiles = glob($this->modelsRuntimeDir . '/*.php') ?: [];
         $this->assertCount(9, $xmlFiles);
-        $this->assertCount(9, $phpFiles);
+        $this->assertCount(10, $phpFiles);
         $reportPath = $this->xmlOutputDir . '/mismatch-report.txt';
         $this->assertFileExists($reportPath);
         $report = (string) file_get_contents($reportPath);
@@ -65,9 +69,9 @@ final class CommandPipelineTest extends Unit
         $this->assertStringContainsString('Generated artifacts were cleaned.', $output);
 
         $xmlFiles = glob($this->xmlOutputDir . '/*') ?: [];
-        $phpFiles = glob($this->phpOutputDir . '/*') ?: [];
+        $phpFiles = glob($this->modelsRuntimeDir . '/*.php') ?: [];
         $this->assertCount(0, $xmlFiles);
-        $this->assertCount(0, $phpFiles);
+        $this->assertCount(10, $phpFiles);
         $this->assertFileExists($sentinel);
 
         unlink($sentinel);
@@ -85,5 +89,50 @@ final class CommandPipelineTest extends Unit
         $command = new CleanCommand();
         $tester = new CommandTester($command);
         $tester->execute(['--config' => $this->configPath]);
+    }
+
+    private function resetDirectory(string $path): void
+    {
+        if (is_dir($path)) {
+            $items = scandir($path);
+            if ($items !== false) {
+                foreach ($items as $item) {
+                    if ($item === '.' || $item === '..') {
+                        continue;
+                    }
+
+                    $full = $path . '/' . $item;
+                    if (is_file($full)) {
+                        unlink($full);
+                    }
+                }
+            }
+        } else {
+            mkdir($path, 0777, true);
+        }
+    }
+
+    private function copyDir(string $from, string $to): void
+    {
+        if (!is_dir($to) && !mkdir($to, 0777, true) && !is_dir($to)) {
+            throw new \RuntimeException('Cannot create runtime models dir: ' . $to);
+        }
+
+        $items = scandir($from);
+        if ($items === false) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $src = $from . '/' . $item;
+            $dst = $to . '/' . $item;
+            if (is_file($src)) {
+                copy($src, $dst);
+            }
+        }
     }
 }

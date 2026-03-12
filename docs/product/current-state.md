@@ -4,6 +4,7 @@
 - CLI commands:
   - `tools:orm:generate`
   - `tools:orm:clean`
+  - `tools:sandbox:prepare`
   - `tools:ai:task-execute`
   - `tools:report:build`
 - Deterministic core generation pipeline is operational.
@@ -14,5 +15,5 @@
 - Runtime task artifacts are written to `var/tasks/...`.
 
 ## Operational Rule
-- First run `tools:orm:generate` on sandbox inputs.
+- First run `tools:sandbox:prepare`, then `tools:orm:generate` on sandbox inputs.
 - Then run AI diagnostics and report build.

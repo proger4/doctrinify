@@ -1,0 +1,9 @@
+# Mismatch Report
+generated_at=2026-03-12T22:52:25+00:00
+count=5
+
+- [info] regeneration strategy: overwrite_all | code=REGEN
+- [warning] relation `itemsWithCondition` rejected: contains SQL query modifiers: addOrderBy, onCondition, condition | code=RELATION_REJECTED,class=app%5Cmodels%5COrder,relation=itemsWithCondition
+- [warning] relation `categoriesWithSql` rejected: contains SQL query modifiers: andWhere, joinType, joinWith, addOrderBy, order, orderBy, condition, where | code=RELATION_REJECTED,class=app%5Cmodels%5CProduct,relation=categoriesWithSql
+- [warning] local field `category_id` missing in `product` for relation `categories` | code=RELATION,class=app%5Cmodels%5CProduct,relation=categories
+- [warning] local field `product_id` missing in `category` for relation `products` | code=RELATION,class=app%5Cmodels%5CCategory,relation=products

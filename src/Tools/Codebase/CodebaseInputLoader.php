@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Doctrinify\Tools\Codebase;
 
+use Doctrinify\Tools\AST\AstFacade;
 use Doctrinify\Tools\Config\ConfigLoader;
 use Doctrinify\Tools\Schemas\Pipeline\CodebaseInput;
 use Doctrinify\Tools\Schemas\Pipeline\GeneratorConfig;
@@ -13,6 +14,7 @@ final class CodebaseInputLoader
     public function __construct(
         private readonly string $projectRoot,
         private readonly ?ConfigLoader $configLoader = null,
+        private readonly ?AstFacade $astFacade = null,
     ) {
     }
 
@@ -97,7 +99,7 @@ final class CodebaseInputLoader
 
     /**
      * @param list<string> $excludeDirs
-     * @return array<string, array{file:string,extends:?string,content:string}>
+     * @return array<string, array{file:string,extends:?string,methodNames:list<string>}>
      */
     private function scanPhpClasses(string $modelsPath, array $excludeDirs): array
     {
@@ -138,7 +140,7 @@ final class CodebaseInputLoader
             $index[$parsed['fqn']] = [
                 'file' => $fileInfo->getPathname(),
                 'extends' => $parsed['extends'],
-                'content' => $parsed['content'],
+                'methodNames' => $parsed['methodNames'],
             ];
         }
 
@@ -147,44 +149,16 @@ final class CodebaseInputLoader
     }
 
     /**
-     * @return array{fqn:string,extends:?string,content:string}|null
+     * @return array{fqn:string,extends:?string,methodNames:list<string>}|null
      */
     private function parsePhpClassHeader(string $filePath): ?array
     {
-        $content = file_get_contents($filePath);
-        if (!is_string($content) || $content === '') {
-            return null;
-        }
-
-        if (preg_match('/\bclass\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:extends\s+([A-Za-z0-9_\\\\]+))?/s', $content, $classMatch) !== 1) {
-            return null;
-        }
-
-        $namespace = '';
-        if (preg_match('/\bnamespace\s+([A-Za-z0-9_\\\\]+)\s*;/', $content, $nsMatch) === 1) {
-            $namespace = $nsMatch[1];
-        }
-
-        $shortName = $classMatch[1];
-        $fqn = $namespace !== '' ? $namespace . '\\' . $shortName : $shortName;
-
-        $extends = null;
-        if (isset($classMatch[2]) && trim($classMatch[2]) !== '') {
-            $extends = trim($classMatch[2]);
-            if (!str_contains($extends, '\\') && $namespace !== '') {
-                $extends = $namespace . '\\' . $extends;
-            }
-        }
-
-        return [
-            'fqn' => $fqn,
-            'extends' => $extends,
-            'content' => $content,
-        ];
+        $ast = $this->astFacade ?? new AstFacade();
+        return $ast->extractFirstClassInfo($filePath);
     }
 
     /**
-     * @param array<string, array{file:string,extends:?string,content:string}> $fileIndex
+     * @param array<string, array{file:string,extends:?string,methodNames:list<string>}> $fileIndex
      * @param list<string> $baseClasses
      * @param list<string> $blacklist
      * @return array{0:list<string>,1:array<string,string>}
@@ -193,6 +167,7 @@ final class CodebaseInputLoader
     {
         $classes = [];
         $classFiles = [];
+        $ast = $this->astFacade ?? new AstFacade();
 
         $baseLookup = array_fill_keys($baseClasses, true);
         $baseShortLookup = [];
@@ -227,7 +202,7 @@ final class CodebaseInputLoader
                 }
             }
 
-            if ($this->hasModelHeuristics($meta['content'])) {
+            if ($ast->hasModelHeuristics($meta['methodNames'])) {
                 $classes[] = $fqn;
                 $classFiles[$fqn] = $meta['file'];
             }
@@ -243,19 +218,12 @@ final class CodebaseInputLoader
     private function matchesWildcardBlacklist(string $className, array $blacklist): bool
     {
         foreach ($blacklist as $pattern) {
-            $quoted = preg_quote($pattern, '/');
-            $regex = '/^' . str_replace('\\*', '.*', $quoted) . '$/';
-            if (preg_match($regex, $className) === 1) {
+            if (fnmatch($pattern, $className, FNM_NOESCAPE)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    private function hasModelHeuristics(string $content): bool
-    {
-        return preg_match('/\bfunction\s+(tableName|relations|rules|primaryKey)\s*\(/', $content) === 1;
     }
 
     /**

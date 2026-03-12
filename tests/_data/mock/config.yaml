@@ -1,10 +1,10 @@
-models_path: 'tests/_data/mock/models'
+models_path: 'tests/_output/sandbox/models'
 
 base_classes:
   - 'app\\models\\BaseModel'
 
 doctrine_xml_path: 'tests/_output/generated/doctrine'
-generated_php_path: 'tests/_output/generated/classes'
+generated_php_path: 'tests/_output/sandbox/models'
 
 schema_path: 'tests/_data/mock/database/schema.sql'
 
@@ -39,7 +39,7 @@ project_profile:
       xmlns: "http://doctrine-project.org/schemas/orm/doctrine-mapping"
     filename_pattern: "{class}.orm.xml"
   generated_php:
-    namespace: "generated\\classes"
+    namespace: "app\\models"
   regeneration:
     strategy: "overwrite_all"
     add_generated_marker: true

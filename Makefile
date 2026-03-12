@@ -5,7 +5,7 @@ ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 BTREE_DEPTH ?= 5
 ANALYZE_PATHS ?= src
 
-.PHONY: help tree test test-unit static stan psalm phpcs
+.PHONY: help tree test test-unit static stan psalm phpcs sandbox-prepare
 
 help: ## Show available targets
 	@echo "Available targets:"
@@ -32,5 +32,8 @@ psalm: ## Run Psalm static analysis
 
 phpcs: ## Run PHP_CodeSniffer (PSR-12)
 	@vendor/bin/phpcs --standard=PSR12 $(ANALYZE_PATHS)
+
+sandbox-prepare: ## Sync runtime sandbox/models from fixture models
+	@php bin/console tools:sandbox:prepare --clean
 
 static: stan psalm phpcs ## Run all static analyzers

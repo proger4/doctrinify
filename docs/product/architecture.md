@@ -12,7 +12,7 @@
 ## AI Sidecar Layer
 - Located in `src/Tools/Tasks`.
 - Reads workbook `src/Tools/Tasks/test.xlsx`.
-- Builds inputs from sandbox refs (`tests/_data/mock/*`) and real generator outputs (`generated/*`).
+- Builds inputs from sandbox refs (`sandbox/*`, `tests/_data/mock/*`) and real generator outputs (`sandbox/*` by default, `generated/*` legacy fallback).
 - Stores runtime artifacts under `var/tasks/<task_set>/{inputs,prompts,results,reports}`.
 - Never mutates generator output directly.
 

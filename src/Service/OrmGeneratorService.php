@@ -117,13 +117,24 @@ final class OrmGeneratorService
             }
 
             $php = null;
-            $phpFilename = null;
+            $phpInstruction = null;
             if ($codebase->config->generatePhp) {
-                $php = $this->phpCodeGenerator->generate($className, $table, $profile, $classDiagnostics);
-                $phpFilename = $this->phpCodeGenerator->buildFilename($className);
+                $modelFile = $codebase->classFiles[$className] ?? ($codebase->config->modelsPath . '/' . $this->shortClassName($className) . '.php');
+                $phpInstruction = $this->phpCodeGenerator->buildAstInstruction(
+                    className: $className,
+                    targetPath: $modelFile,
+                    table: $table,
+                    profile: $profile,
+                    diagnostics: $classDiagnostics,
+                );
             }
 
-            $artifacts[] = new GeneratedArtifactSchema($className, $xmlFilename, $phpFilename, $xml, $php);
+            $artifacts[] = new GeneratedArtifactSchema(
+                className: $className,
+                xmlFilename: $xmlFilename,
+                xml: $xml,
+                phpInstruction: $phpInstruction,
+            );
         }
 
         $reportDiagnostics = array_merge(
@@ -153,8 +164,9 @@ final class OrmGeneratorService
 
     public function clean(string $configPath): void
     {
-        $codebase = $this->codebaseLoader->load($configPath, false);
-        $this->persister->clean($codebase->config->xmlOutputPath, $codebase->config->phpOutputPath);
+        $codebase = $this->codebaseLoader->load($configPath, true);
+        $this->persister->clean($codebase->config->xmlOutputPath, '');
+        $this->persister->cleanGeneratedAstMembers($codebase->classFiles);
     }
 
     /**
