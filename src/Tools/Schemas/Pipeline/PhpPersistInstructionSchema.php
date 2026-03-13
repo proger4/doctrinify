@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Schemas\Pipeline;
+namespace App\Tools\Schemas\Pipeline;
 
 final readonly class PhpPersistInstructionSchema
 {

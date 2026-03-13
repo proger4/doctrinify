@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Tools\Codebase\CodebaseInputLoader;
+use App\Tools\Codebase\CodebaseInputLoader;
 
 final class CodebaseInputLoaderTest extends Unit
 {

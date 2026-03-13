@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Service\OrmGeneratorService;
+use App\Service\OrmGeneratorService;
 
 final class OrmGeneratorServiceTest extends Unit
 {
@@ -112,7 +112,7 @@ schema_path: 'tests/_data/mock/database/schema.sql'
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
-project_profile:
+tooling:
   doctrine_xml:
     root_attributes:
       xmlns: "http://doctrine-project.org/schemas/orm/doctrine-mapping"
@@ -164,7 +164,7 @@ schema_path: 'tests/_output/hierarchy/schema.sql'
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
-project_profile:
+tooling:
   doctrine_xml:
     filename_pattern: '{class}.orm.xml'
   regeneration:

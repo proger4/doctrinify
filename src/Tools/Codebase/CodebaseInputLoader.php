@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Codebase;
+namespace App\Tools\Codebase;
 
-use Doctrinify\Tools\AST\AstFacade;
-use Doctrinify\Tools\Config\ConfigLoader;
-use Doctrinify\Tools\Schemas\Pipeline\CodebaseInput;
-use Doctrinify\Tools\Schemas\Pipeline\GeneratorConfig;
-use Doctrinify\Tools\Schemas\Pipeline\ModelHierarchySchema;
+use App\Tools\AST\AstFacade;
+use App\Tools\Config\ConfigLoader;
+use App\Tools\Schemas\Pipeline\CodebaseInput;
+use App\Tools\Schemas\Pipeline\GeneratorConfig;
+use App\Tools\Schemas\Pipeline\ModelHierarchySchema;
 use Tree\Node\Node;
 
 final class CodebaseInputLoader

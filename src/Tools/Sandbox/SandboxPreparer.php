@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Sandbox;
+namespace App\Tools\Sandbox;
 
 final class SandboxPreparer
 {

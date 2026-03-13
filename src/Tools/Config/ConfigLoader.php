@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Config;
+namespace App\Tools\Config;
 
 use Symfony\Component\Yaml\Yaml;
 

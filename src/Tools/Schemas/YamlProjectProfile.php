@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Schemas;
+namespace App\Tools\Schemas;
 
-use Doctrinify\Tools\Config\ConfigLoader;
+use App\Tools\Config\ConfigLoader;
 
 final class YamlProjectProfile implements ProjectProfileInterface
 {
@@ -19,10 +19,14 @@ final class YamlProjectProfile implements ProjectProfileInterface
     {
     }
 
-    public static function fromFile(string $projectRoot, string $configPath, ?ConfigLoader $configLoader = null): self
+    public static function fromFile(string $configPath, ?string $projectRoot = null): self
     {
-        $loader = $configLoader ?? new ConfigLoader();
-        return new self($loader->load($projectRoot, $configPath));
+        $loader = new ConfigLoader();
+        $base = $projectRoot ?? (getcwd() ?: '.');
+        $resolved = $loader->resolvePath($base, $configPath);
+        $resolvedRoot = dirname($resolved);
+
+        return new self($loader->load($resolvedRoot, $resolved));
     }
 
     /**
@@ -30,7 +34,8 @@ final class YamlProjectProfile implements ProjectProfileInterface
      */
     public function getDoctrineXmlRootAttributes(): array
     {
-        $attributes = $this->config['project_profile']['doctrine_xml']['root_attributes'] ?? null;
+        $profile = $this->profileConfig();
+        $attributes = $profile['doctrine_xml']['root_attributes'] ?? null;
         if (!is_array($attributes)) {
             return self::DEFAULT_ROOT_ATTRIBUTES;
         }
@@ -48,17 +53,43 @@ final class YamlProjectProfile implements ProjectProfileInterface
 
     public function getDoctrineXmlFilenamePattern(): string
     {
-        $value = $this->config['project_profile']['doctrine_xml']['filename_pattern'] ?? '{class}.orm.xml';
+        $profile = $this->profileConfig();
+        $value = $profile['doctrine_xml']['filename_pattern'] ?? '{class}.orm.xml';
         return is_string($value) && $value !== '' ? $value : '{class}.orm.xml';
+    }
+
+    public function getGenerationNaming(): string
+    {
+        $profile = $this->profileConfig();
+        $value = $profile['regeneration']['naming'] ?? 'doctrinify';
+        return is_string($value) && trim($value) !== '' ? trim($value) : 'doctrinify';
     }
 
     public function shouldAddGeneratedMarker(): bool
     {
-        return (bool) ($this->config['project_profile']['regeneration']['add_generated_marker'] ?? true);
+        $profile = $this->profileConfig();
+        return (bool) ($profile['regeneration']['add_generated_marker'] ?? true);
     }
 
     public function shouldEmbedDiagnostics(): bool
     {
-        return (bool) ($this->config['project_profile']['regeneration']['embed_diagnostics'] ?? false);
+        $profile = $this->profileConfig();
+        return (bool) ($profile['regeneration']['embed_diagnostics'] ?? false);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function profileConfig(): array
+    {
+        if (is_array($this->config['tooling'] ?? null)) {
+            return $this->config['tooling'];
+        }
+
+        if (is_array($this->config['project_profile'] ?? null)) {
+            return $this->config['project_profile'];
+        }
+
+        return [];
     }
 }

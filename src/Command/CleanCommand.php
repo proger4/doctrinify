@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Command;
+namespace App\Command;
 
-use Doctrinify\Service\OrmGeneratorService;
+use App\Service\OrmGeneratorService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

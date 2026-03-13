@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Schemas\Pipeline;
+namespace App\Tools\Schemas\Pipeline;
 
-use Doctrinify\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
 
 final readonly class IntrospectionResultSchema
 {

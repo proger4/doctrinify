@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Persist;
+namespace App\Tools\Persist;
 
-use Doctrinify\Tools\AST\AstClassMutationPlan;
-use Doctrinify\Tools\AST\AstFacade;
-use Doctrinify\Tools\Schemas\Pipeline\GenerationResultSchema;
-use Doctrinify\Tools\Schemas\Pipeline\PhpPersistInstructionSchema;
-use Doctrinify\Tools\Schemas\Pipeline\PersistResultSchema;
+use App\Tools\AST\AstClassMutationPlan;
+use App\Tools\AST\AstFacade;
+use App\Tools\Schemas\Pipeline\GenerationResultSchema;
+use App\Tools\Schemas\Pipeline\PhpPersistInstructionSchema;
+use App\Tools\Schemas\Pipeline\PersistResultSchema;
 
 final class ArtifactPersister
 {

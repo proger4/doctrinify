@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Tools\Database\SchemaDumpParser;
+use App\Tools\Database\SchemaDumpParser;
 
 final class SchemaDumpParserTest extends Unit
 {

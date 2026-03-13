@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Service;
+namespace App\Service;
 
-use Doctrinify\Tools\Analysis\PipelineAnalyzer;
-use Doctrinify\Tools\Codebase\CodebaseInputLoader;
-use Doctrinify\Tools\Codegen\DoctrineXmlCodeGenerator;
-use Doctrinify\Tools\Codegen\PhpAccessorCodeGenerator;
-use Doctrinify\Tools\Introspection\DatabaseSchemaIntrospector;
-use Doctrinify\Tools\Introspection\ModelIntrospector;
-use Doctrinify\Tools\Persist\ArtifactPersister;
-use Doctrinify\Tools\Schemas\Pipeline\Diagnostic;
-use Doctrinify\Tools\Schemas\Pipeline\GeneratedArtifactSchema;
-use Doctrinify\Tools\Schemas\Pipeline\GenerationResultSchema;
-use Doctrinify\Tools\Schemas\Pipeline\IntrospectionResultSchema;
-use Doctrinify\Tools\Config\ConfigLoader;
-use Doctrinify\Tools\Database\SchemaDumpParser;
-use Doctrinify\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
-use Doctrinify\Tools\Schemas\ProjectProfileInterface;
-use Doctrinify\Tools\Schemas\YamlProjectProfile;
+use App\Tools\Analysis\PipelineAnalyzer;
+use App\Tools\Codebase\CodebaseInputLoader;
+use App\Tools\Codegen\DoctrineXmlCodeGenerator;
+use App\Tools\Codegen\PhpAccessorCodeGenerator;
+use App\Tools\Introspection\DatabaseSchemaIntrospector;
+use App\Tools\Introspection\ModelIntrospector;
+use App\Tools\Persist\ArtifactPersister;
+use App\Tools\Schemas\Pipeline\Diagnostic;
+use App\Tools\Schemas\Pipeline\GeneratedArtifactSchema;
+use App\Tools\Schemas\Pipeline\GenerationResultSchema;
+use App\Tools\Schemas\Pipeline\IntrospectionResultSchema;
+use App\Tools\Config\ConfigLoader;
+use App\Tools\Database\SchemaDumpParser;
+use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
+use App\Tools\Schemas\ProjectProfileInterface;
+use App\Tools\Schemas\YamlProjectProfile;
 
 final class OrmGeneratorService
 {
@@ -64,7 +64,7 @@ final class OrmGeneratorService
      */
     public function generate(string $configPath): array
     {
-        $profile = $this->projectProfile ?? YamlProjectProfile::fromFile($this->projectRoot, $configPath, $this->configLoader);
+        $profile = $this->projectProfile ?? YamlProjectProfile::fromFile($configPath, $this->projectRoot);
         $codebase = $this->codebaseLoader->load($configPath, true);
 
         $models = [];

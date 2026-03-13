@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Analysis;
+namespace App\Tools\Analysis;
 
-use Doctrinify\Tools\Schemas\Pipeline\AnalyzedModelSchema;
-use Doctrinify\Tools\Schemas\Pipeline\AnalysisResultSchema;
-use Doctrinify\Tools\Schemas\Pipeline\Diagnostic;
-use Doctrinify\Tools\Schemas\Pipeline\IntrospectionResultSchema;
-use Doctrinify\Tools\Schemas\Pipeline\ModelHierarchySchema;
-use Doctrinify\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
-use Doctrinify\Tools\Schemas\Pipeline\ModelRelationSchema;
-use Doctrinify\Tools\Schemas\Pipeline\RelationDecisionSchema;
-use Doctrinify\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
-use Doctrinify\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
+use App\Tools\Schemas\Pipeline\AnalyzedModelSchema;
+use App\Tools\Schemas\Pipeline\AnalysisResultSchema;
+use App\Tools\Schemas\Pipeline\Diagnostic;
+use App\Tools\Schemas\Pipeline\IntrospectionResultSchema;
+use App\Tools\Schemas\Pipeline\ModelHierarchySchema;
+use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
+use App\Tools\Schemas\Pipeline\ModelRelationSchema;
+use App\Tools\Schemas\Pipeline\RelationDecisionSchema;
+use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
 
 final class PipelineAnalyzer
 {

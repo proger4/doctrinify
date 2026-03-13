@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Introspection;
+namespace App\Tools\Introspection;
 
-use Doctrinify\Tools\AST\AstFacade;
-use Doctrinify\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
+use App\Tools\AST\AstFacade;
+use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
 
 final class ModelIntrospector
 {

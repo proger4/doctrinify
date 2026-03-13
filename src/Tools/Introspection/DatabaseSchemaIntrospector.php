@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Introspection;
+namespace App\Tools\Introspection;
 
-use Doctrinify\Tools\Database\SchemaDumpParser;
-use Doctrinify\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
+use App\Tools\Database\SchemaDumpParser;
+use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
 
 final class DatabaseSchemaIntrospector
 {

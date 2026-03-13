@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Command\CleanCommand;
-use Doctrinify\Command\GenerateCommand;
+use App\Command\CleanCommand;
+use App\Command\GenerateCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 

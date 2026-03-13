@@ -2,16 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Schemas;
+namespace App\Tools\Schemas;
 
 interface ProjectProfileInterface
 {
+    public static function fromFile(string $configPath, ?string $projectRoot = null): self;
+
     /**
      * @return array<string, string>
      */
     public function getDoctrineXmlRootAttributes(): array;
 
     public function getDoctrineXmlFilenamePattern(): string;
+
+    public function getGenerationNaming(): string;
 
     public function shouldAddGeneratedMarker(): bool;
 

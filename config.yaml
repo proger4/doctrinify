@@ -20,7 +20,7 @@ flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
 
-project_profile:
+tooling:
   doctrine_xml:
     root_attributes:
       xmlns: "http://doctrine-project.org/schemas/orm/doctrine-mapping"
@@ -28,5 +28,6 @@ project_profile:
       xsi:schemaLocation: "http://doctrine-project.org/schemas/orm/doctrine-mapping https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd"
     filename_pattern: "{class}.orm.xml"
   regeneration:
+    naming: "doctrinify"
     add_generated_marker: true
     embed_diagnostics: true

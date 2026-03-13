@@ -28,10 +28,11 @@
 - `classlist_path` (опционально)
 - `flags.generate_doctrine_xml`
 - `flags.generate_php_accessors`
-- `project_profile.doctrine_xml.root_attributes`
-- `project_profile.doctrine_xml.filename_pattern`
-- `project_profile.regeneration.add_generated_marker`
-- `project_profile.regeneration.embed_diagnostics`
+- `tooling.doctrine_xml.root_attributes`
+- `tooling.doctrine_xml.filename_pattern`
+- `tooling.regeneration.naming`
+- `tooling.regeneration.add_generated_marker`
+- `tooling.regeneration.embed_diagnostics`
 
 ## Важные правила
 - PHP-генерация работает только как AST-патчинг существующих файлов.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\AST;
+namespace App\Tools\AST;
 
 final readonly class AstClassMutationPlan
 {

@@ -3,9 +3,9 @@
 
 declare(strict_types=1);
 
-use Doctrinify\Command\CleanCommand;
-use Doctrinify\Command\GenerateCommand;
-use Doctrinify\Command\PrepareSandboxCommand;
+use App\Command\CleanCommand;
+use App\Command\GenerateCommand;
+use App\Command\PrepareSandboxCommand;
 use Symfony\Component\Console\Application;
 
 require_once __DIR__ . '/../vendor/autoload.php';

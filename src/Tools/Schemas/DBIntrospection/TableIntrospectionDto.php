@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Schemas\DBIntrospection;
+namespace App\Tools\Schemas\DBIntrospection;
 
 final readonly class TableIntrospectionDto
 {

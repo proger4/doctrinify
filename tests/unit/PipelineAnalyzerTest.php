@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Tools\Analysis\PipelineAnalyzer;
-use Doctrinify\Tools\Schemas\Pipeline\IntrospectionResultSchema;
-use Doctrinify\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
-use Doctrinify\Tools\Schemas\Pipeline\ModelRelationSchema;
-use Doctrinify\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
+use App\Tools\Analysis\PipelineAnalyzer;
+use App\Tools\Schemas\Pipeline\IntrospectionResultSchema;
+use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
+use App\Tools\Schemas\Pipeline\ModelRelationSchema;
+use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
 
 final class PipelineAnalyzerTest extends Unit
 {

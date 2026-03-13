@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Doctrinify\Tools\Database;
+namespace App\Tools\Database;
 
-use Doctrinify\Tools\Schemas\DBIntrospection\ColumnIntrospectionDto;
-use Doctrinify\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
-use Doctrinify\Tools\Schemas\DBIntrospection\ForeignKeyIntrospectionDto;
-use Doctrinify\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\ColumnIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\ForeignKeyIntrospectionDto;
+use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
 
 final class SchemaDumpParser
 {

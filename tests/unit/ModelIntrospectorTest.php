@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Tools\Introspection\ModelIntrospector;
+use App\Tools\Introspection\ModelIntrospector;
 
 final class ModelIntrospectorTest extends Unit
 {

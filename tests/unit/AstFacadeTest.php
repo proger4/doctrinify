@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use Doctrinify\Tools\AST\AstClassMutationPlan;
-use Doctrinify\Tools\AST\AstFacade;
+use App\Tools\AST\AstClassMutationPlan;
+use App\Tools\AST\AstFacade;
 
 final class AstFacadeTest extends Unit
 {
