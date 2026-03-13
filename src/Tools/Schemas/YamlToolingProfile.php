@@ -6,7 +6,7 @@ namespace App\Tools\Schemas;
 
 use App\Tools\Config\ConfigLoader;
 
-final class YamlToolingProfile implements ProjectProfileInterface
+final class YamlToolingProfile implements ToolingProfileInterface
 {
     private const DEFAULT_ROOT_ATTRIBUTES = [
         'xmlns' => 'http://doctrine-project.org/schemas/orm/doctrine-mapping',

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tools\Schemas;
 
-interface ProjectProfileInterface
+interface ToolingProfileInterface
 {
     public static function fromFile(string $configPath, ?string $projectRoot = null): self;
 

@@ -18,7 +18,7 @@ use App\Tools\Schemas\Pipeline\IntrospectionResultSchema;
 use App\Tools\Config\ConfigLoader;
 use App\Tools\Database\SchemaDumpParser;
 use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
-use App\Tools\Schemas\ProjectProfileInterface;
+use App\Tools\Schemas\ToolingProfileInterface;
 use App\Tools\Schemas\YamlToolingProfile;
 
 final class OrmGeneratorService
@@ -32,20 +32,20 @@ final class OrmGeneratorService
     private PhpAccessorCodeGenerator $phpCodeGenerator;
     private ArtifactPersister $persister;
     private ConfigLoader $configLoader;
-    private ?ProjectProfileInterface $projectProfile;
+    private ?ToolingProfileInterface $projectProfile;
 
     public function __construct(
-        ?string $projectRoot = null,
-        ?SchemaDumpParser $schemaDumpParser = null,
-        ?CodebaseInputLoader $codebaseLoader = null,
-        ?ModelIntrospector $modelIntrospector = null,
+        ?string                     $projectRoot = null,
+        ?SchemaDumpParser           $schemaDumpParser = null,
+        ?CodebaseInputLoader        $codebaseLoader = null,
+        ?ModelIntrospector          $modelIntrospector = null,
         ?DatabaseSchemaIntrospector $databaseIntrospector = null,
-        ?PipelineAnalyzer $analyzer = null,
-        ?DoctrineXmlCodeGenerator $xmlCodeGenerator = null,
-        ?PhpAccessorCodeGenerator $phpCodeGenerator = null,
-        ?ArtifactPersister $persister = null,
-        ?ConfigLoader $configLoader = null,
-        ?ProjectProfileInterface $projectProfile = null,
+        ?PipelineAnalyzer           $analyzer = null,
+        ?DoctrineXmlCodeGenerator   $xmlCodeGenerator = null,
+        ?PhpAccessorCodeGenerator   $phpCodeGenerator = null,
+        ?ArtifactPersister          $persister = null,
+        ?ConfigLoader               $configLoader = null,
+        ?ToolingProfileInterface    $projectProfile = null,
     ) {
         $this->projectRoot = $projectRoot ?? (getcwd() ?: '.');
         $this->configLoader = $configLoader ?? new ConfigLoader();

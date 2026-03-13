@@ -8,7 +8,7 @@ use App\Tools\AST\AstFacade;
 use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
 use App\Tools\Schemas\Pipeline\Diagnostic;
 use App\Tools\Schemas\Pipeline\PhpPersistInstructionSchema;
-use App\Tools\Schemas\ProjectProfileInterface;
+use App\Tools\Schemas\ToolingProfileInterface;
 
 final class PhpAccessorCodeGenerator
 {
@@ -20,11 +20,11 @@ final class PhpAccessorCodeGenerator
      * @param list<Diagnostic> $diagnostics
      */
     public function buildAstInstruction(
-        string $className,
-        string $targetPath,
-        TableIntrospectionDto $table,
-        ProjectProfileInterface $profile,
-        array $diagnostics,
+        string                  $className,
+        string                  $targetPath,
+        TableIntrospectionDto   $table,
+        ToolingProfileInterface $profile,
+        array                   $diagnostics,
     ): PhpPersistInstructionSchema {
         $fieldNames = [];
         foreach ($table->fields as $field) {

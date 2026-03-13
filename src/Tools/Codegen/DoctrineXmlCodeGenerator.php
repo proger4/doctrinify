@@ -9,7 +9,7 @@ use App\Tools\Schemas\Pipeline\Diagnostic;
 use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
 use App\Tools\Schemas\DBIntrospection\ColumnIntrospectionDto;
 use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
-use App\Tools\Schemas\ProjectProfileInterface;
+use App\Tools\Schemas\ToolingProfileInterface;
 
 final class DoctrineXmlCodeGenerator
 {
@@ -19,13 +19,13 @@ final class DoctrineXmlCodeGenerator
      * @param list<Diagnostic> $diagnostics
      */
     public function generate(
-        string $className,
-        AnalyzedModelSchema $analyzedModel,
-        TableIntrospectionDto $table,
-        array $stiByRoot,
-        array $modelMetas,
-        ProjectProfileInterface $profile,
-        array $diagnostics,
+        string                  $className,
+        AnalyzedModelSchema     $analyzedModel,
+        TableIntrospectionDto   $table,
+        array                   $stiByRoot,
+        array                   $modelMetas,
+        ToolingProfileInterface $profile,
+        array                   $diagnostics,
     ): string {
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><doctrine-mapping/>');
 
@@ -149,7 +149,7 @@ final class DoctrineXmlCodeGenerator
         return (string) $document->saveXML();
     }
 
-    public function buildFilename(string $className, ProjectProfileInterface $profile): string
+    public function buildFilename(string $className, ToolingProfileInterface $profile): string
     {
         $pattern = $profile->getDoctrineXmlFilenamePattern();
         return str_replace('{class}', $this->shortClassName($className), $pattern);
