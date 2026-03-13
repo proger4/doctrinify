@@ -221,8 +221,8 @@ final class OrmGeneratorService
             }
 
             $filePath = $classFiles[$candidate] ?? '';
-            $isBaseByNamespace = stripos($candidate, '\\_base\\') !== false || stripos($candidate, '\\base\\') !== false;
-            $isBaseByPath = is_string($filePath) && str_contains(strtolower(str_replace('\\', '/', $filePath)), '/_base/');
+            $isBaseByNamespace = stripos($candidate, '\\_base\\') !== false;
+            $isBaseByPath = is_string($filePath) && preg_match('~(?:^|/)_base(?:/|$)~', strtolower(str_replace('\\', '/', $filePath))) === 1;
             if ($isBaseByNamespace || $isBaseByPath) {
                 return $candidate;
             }

@@ -41,10 +41,7 @@ final class AstFacade
         $fqn = $namespace !== '' ? $namespace . '\\' . $shortName : $shortName;
         $extends = null;
         if ($class->extends instanceof Node\Name) {
-            $extends = $class->extends->toString();
-            if (!str_contains($extends, '\\') && $namespace !== '') {
-                $extends = $namespace . '\\' . $extends;
-            }
+            $extends = $this->qualifyNameInNamespace($class->extends, $namespace);
         }
 
         $methodNames = [];
@@ -142,11 +139,8 @@ final class AstFacade
 
         $extends = null;
         if ($classNode->extends instanceof Node\Name) {
-            $extends = $classNode->extends->toString();
-            if (!str_contains($extends, '\\')) {
-                $namespace = substr($className, 0, (int)strrpos($className, '\\'));
-                $extends = $namespace . '\\' . $extends;
-            }
+            $namespace = substr($className, 0, (int)strrpos($className, '\\'));
+            $extends = $this->qualifyNameInNamespace($classNode->extends, $namespace);
         }
 
         $table = null;
@@ -195,7 +189,7 @@ final class AstFacade
         return new ModelIntrospectionSchema(
             className: $className,
             extends: $extends,
-            isAbstract: $classNode->isAbstract(),
+            isAbstract: $classNode->isAbstract() && $table === null,
             table: $table,
             relations: $relations,
             discriminator: $discriminator,
@@ -203,6 +197,16 @@ final class AstFacade
             attributeLabels: $labels,
             primaryKey: $primaryKey,
         );
+    }
+
+    private function qualifyNameInNamespace(Name $name, string $namespace): string
+    {
+        $raw = ltrim($name->toString(), '\\');
+        if ($name->isFullyQualified() || $namespace === '') {
+            return $raw;
+        }
+
+        return $namespace . '\\' . $raw;
     }
 
     /**
@@ -625,7 +629,7 @@ final class AstFacade
             Stmt\Class_::MODIFIER_PROTECTED,
             [new Stmt\PropertyProperty($fieldName)]
         );
-        $property->setDocComment(new Doc("/**\n * {$generatedMarker}\n */"));
+        $property->setDocComment(new Doc("/** {$generatedMarker} */"));
         return $property;
     }
 
@@ -637,7 +641,7 @@ final class AstFacade
                 new Stmt\Return_(new Expr\PropertyFetch(new Expr\Variable('this'), $fieldName)),
             ],
         ]);
-        $method->setDocComment(new Doc("/**\n * {$generatedMarker}\n */"));
+        $method->setDocComment(new Doc("/** {$generatedMarker} */"));
         return $method;
     }
 
@@ -657,7 +661,7 @@ final class AstFacade
             ],
             'returnType' => new Name('self'),
         ]);
-        $method->setDocComment(new Doc("/**\n * {$generatedMarker}\n */"));
+        $method->setDocComment(new Doc("/** {$generatedMarker} */"));
         return $method;
     }
 
@@ -673,6 +677,7 @@ final class AstFacade
         $existingProps = $this->collectPropertyNames($class->stmts);
         $existingMethods = $this->collectMethodNames($class->stmts);
 
+        $nodesToInsert = [];
         foreach ($plan->nodes as $node) {
             if (!$node instanceof Stmt) {
                 continue;
@@ -684,7 +689,7 @@ final class AstFacade
                     continue;
                 }
                 $existingProps[strtolower($name)] = true;
-                $class->stmts[] = $node;
+                $nodesToInsert[] = $node;
                 continue;
             }
 
@@ -694,8 +699,12 @@ final class AstFacade
                     continue;
                 }
                 $existingMethods[strtolower($name)] = true;
-                $class->stmts[] = $node;
+                $nodesToInsert[] = $node;
             }
+        }
+
+        if ($nodesToInsert !== []) {
+            $class->stmts = array_merge($nodesToInsert, $class->stmts);
         }
 
         $this->addHeaderComment($ast, $plan->headerComments);

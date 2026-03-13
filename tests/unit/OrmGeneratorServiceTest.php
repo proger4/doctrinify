@@ -176,9 +176,9 @@ YAML;
         $this->service->clean($configPath);
         $this->service->generate($configPath);
 
+        $this->assertFileExists($xmlDir . '/AbstractOrder.orm.xml');
         $this->assertFileExists($xmlDir . '/RetailOrder.orm.xml');
         $this->assertFileExists($xmlDir . '/WholesaleOrder.orm.xml');
-        $this->assertFileDoesNotExist($xmlDir . '/AbstractOrder.orm.xml');
         $this->assertFileDoesNotExist($xmlDir . '/AbstractRegionalOrder.orm.xml');
     }
 
