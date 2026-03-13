@@ -18,6 +18,7 @@ final readonly class GeneratorConfig
         public string $classListPath,
         public bool $generateXml,
         public bool $generatePhp,
+        public bool $tracePipeline,
         public array $baseClasses,
         public array $blacklist,
         public array $modelScanExcludeDirs,

@@ -108,7 +108,7 @@ models_path: 'tests/_output/sandbox/models_custom'
 base_classes:
   - 'app\\\\models\\\\BaseModel'
 doctrine_xml_path: 'tests/_output/generated/doctrine_custom'
-schema_path: 'tests/_data/mock/database/schema.sql'
+schema_path: 'tests/_data/oracle/schema.sql'
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
@@ -144,7 +144,7 @@ YAML;
 
         $this->resetDir($modelsDir);
         @mkdir($xmlDir, 0777, true);
-        file_put_contents($schemaPath, "CREATE TABLE `order` (\n  `order_id` INT NOT NULL,\n  `status` VARCHAR(20) NULL,\n  PRIMARY KEY (`order_id`)\n) ENGINE=InnoDB;\n");
+        file_put_contents($schemaPath, "CREATE TABLE \"ORDER\" (\n  \"ORDER_ID\" NUMBER(11) NOT NULL,\n  \"STATUS\" VARCHAR2(20),\n  CONSTRAINT \"PK_ORDER\" PRIMARY KEY (\"ORDER_ID\")\n);\n");
 
         file_put_contents($modelsDir . '/BaseModel.php', "<?php\nnamespace app\\models;\nabstract class BaseModel {}\n");
         file_put_contents($modelsDir . '/AbstractOrder.php', "<?php\nnamespace app\\models;\nabstract class AbstractOrder extends BaseModel { public static function tableName(){ return 'order'; } }\n");

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Tools\Analysis\PipelineAnalyzer;
+use App\Tools\Analysis\AnalysisBatchBuilder;
+use App\Tools\Analysis\GenerationBatchSelector;
 use App\Tools\Codebase\CodebaseInputLoader;
 use App\Tools\Codegen\DoctrineXmlCodeGenerator;
 use App\Tools\Codegen\PhpAccessorCodeGenerator;
@@ -28,6 +30,8 @@ final class OrmGeneratorService
     private ModelIntrospector $modelIntrospector;
     private DatabaseSchemaIntrospector $databaseIntrospector;
     private PipelineAnalyzer $analyzer;
+    private AnalysisBatchBuilder $analysisBatchBuilder;
+    private GenerationBatchSelector $generationBatchSelector;
     private DoctrineXmlCodeGenerator $xmlCodeGenerator;
     private PhpAccessorCodeGenerator $phpCodeGenerator;
     private ArtifactPersister $persister;
@@ -41,6 +45,8 @@ final class OrmGeneratorService
         ?ModelIntrospector          $modelIntrospector = null,
         ?DatabaseSchemaIntrospector $databaseIntrospector = null,
         ?PipelineAnalyzer           $analyzer = null,
+        ?AnalysisBatchBuilder       $analysisBatchBuilder = null,
+        ?GenerationBatchSelector    $generationBatchSelector = null,
         ?DoctrineXmlCodeGenerator   $xmlCodeGenerator = null,
         ?PhpAccessorCodeGenerator   $phpCodeGenerator = null,
         ?ArtifactPersister          $persister = null,
@@ -53,6 +59,8 @@ final class OrmGeneratorService
         $this->modelIntrospector = $modelIntrospector ?? new ModelIntrospector();
         $this->databaseIntrospector = $databaseIntrospector ?? new DatabaseSchemaIntrospector($schemaDumpParser ?? new SchemaDumpParser());
         $this->analyzer = $analyzer ?? new PipelineAnalyzer();
+        $this->analysisBatchBuilder = $analysisBatchBuilder ?? new AnalysisBatchBuilder();
+        $this->generationBatchSelector = $generationBatchSelector ?? new GenerationBatchSelector();
         $this->xmlCodeGenerator = $xmlCodeGenerator ?? new DoctrineXmlCodeGenerator();
         $this->phpCodeGenerator = $phpCodeGenerator ?? new PhpAccessorCodeGenerator();
         $this->persister = $persister ?? new ArtifactPersister();
@@ -64,8 +72,11 @@ final class OrmGeneratorService
      */
     public function generate(string $configPath): array
     {
+        $trace = [];
         $profile = $this->projectProfile ?? YamlToolingProfile::fromFile($configPath, $this->projectRoot);
+        $trace[] = sprintf('profile: %s', get_class($profile));
         $codebase = $this->codebaseLoader->load($configPath, true);
+        $trace[] = sprintf('codebase: classes=%d files=%d', count($codebase->classes), count($codebase->classFiles));
 
         $models = [];
         foreach ($codebase->classFiles as $className => $file) {
@@ -76,28 +87,27 @@ final class OrmGeneratorService
                 throw new \RuntimeException(sprintf('Model file not found for %s: %s', $className, $file));
             }
 
-            $models[$className] = $this->modelIntrospector->introspect($className, $file);
+            $models[$className] = $this->modelIntrospector->introspect($file, ['class' => $className]);
         }
+        $trace[] = sprintf('model_introspection: %d models', count($models));
 
-        $database = $this->databaseIntrospector->introspect($codebase->config->schemaPath);
+        $database = $this->databaseIntrospector->introspect($codebase->config->schemaPath, []);
+        $trace[] = sprintf('db_introspection: tables=%d sequences=%d', count($database->tables), count($database->sequences));
         $introspection = new IntrospectionResultSchema($models, $database, $codebase->hierarchies);
         $analysis = $this->analyzer->analyze($introspection);
+        $batches = $this->analysisBatchBuilder->build($analysis->models, $database, $codebase->hierarchies);
+        $selectedBatches = $this->generationBatchSelector->select($batches, $codebase->classFiles);
+        $trace[] = sprintf('generation_selection: selected=%d from_batches=%d', count($selectedBatches), count($batches));
+        $trace[] = sprintf('analysis: diagnostics=%d', count($analysis->diagnostics));
 
-        $schemaIndex = $this->indexTablesCaseInsensitive($database->tables);
         $artifacts = [];
+        $phpMutationTargets = [];
 
-        foreach ($codebase->classes as $className) {
-            $analyzedModel = $analysis->models[$className] ?? null;
-            if ($analyzedModel === null || $analyzedModel->model->isAbstract) {
-                continue;
-            }
-
-            if ($analyzedModel->resolvedTable === null) {
-                continue;
-            }
-
-            $table = $this->findTableByName($schemaIndex, $analyzedModel->resolvedTable);
-            if ($table === null) {
+        foreach ($selectedBatches as $batch) {
+            $className = $batch->className;
+            $analyzedModel = $batch->analyzedModel;
+            $table = $batch->table;
+            if (!$table instanceof TableIntrospectionDto) {
                 continue;
             }
 
@@ -120,14 +130,18 @@ final class OrmGeneratorService
 
             $phpInstruction = null;
             if ($codebase->config->generatePhp) {
-                $modelFile = $codebase->classFiles[$className] ?? ($codebase->config->modelsPath . '/' . $this->shortClassName($className) . '.php');
-                $phpInstruction = $this->phpCodeGenerator->buildAstInstruction(
-                    className: $className,
-                    targetPath: $modelFile,
-                    table: $table,
-                    profile: $profile,
-                    diagnostics: $classDiagnostics,
-                );
+                $phpTargetClass = $this->resolvePhpMutationTargetClass($batch, $codebase->classFiles);
+                if (!isset($phpMutationTargets[$phpTargetClass])) {
+                    $phpMutationTargets[$phpTargetClass] = true;
+                    $modelFile = $codebase->classFiles[$phpTargetClass] ?? ($codebase->config->modelsPath . '/' . $this->shortClassName($phpTargetClass) . '.php');
+                    $phpInstruction = $this->phpCodeGenerator->buildAstInstruction(
+                        className: $phpTargetClass,
+                        targetPath: $modelFile,
+                        table: $table,
+                        profile: $profile,
+                        diagnostics: $classDiagnostics,
+                    );
+                }
             }
 
             $artifacts[] = new GeneratedArtifactSchema(
@@ -147,12 +161,20 @@ final class OrmGeneratorService
             result: $generation,
             xmlOutputPath: $codebase->config->xmlOutputPath,
         );
+        $trace[] = sprintf('persist: xml=%d php=%d', count($persisted->xmlFiles), count($persisted->phpFiles));
+
+        $warnings = $codebase->warnings;
+        if ($codebase->config->tracePipeline) {
+            foreach ($trace as $step) {
+                $warnings[] = '[trace] ' . $step;
+            }
+        }
 
         return [
             'xml_files' => $persisted->xmlFiles,
             'php_files' => $persisted->phpFiles,
             'mismatch_report' => $persisted->reportPath,
-            'warnings' => $codebase->warnings,
+            'warnings' => $warnings,
         ];
     }
 
@@ -161,28 +183,6 @@ final class OrmGeneratorService
         $codebase = $this->codebaseLoader->load($configPath, true);
         $this->persister->clean($codebase->config->xmlOutputPath, '');
         $this->persister->cleanGeneratedAstMembers($codebase->classFiles);
-    }
-
-    /**
-     * @param array<string, TableIntrospectionDto> $tables
-     */
-    private function findTableByName(array $tables, string $name): ?TableIntrospectionDto
-    {
-        return $tables[strtolower($name)] ?? null;
-    }
-
-    /**
-     * @param array<string, TableIntrospectionDto> $tables
-     * @return array<string, TableIntrospectionDto>
-     */
-    private function indexTablesCaseInsensitive(array $tables): array
-    {
-        $index = [];
-        foreach ($tables as $table) {
-            $index[strtolower($table->name)] = $table;
-        }
-
-        return $index;
     }
 
     private function shortClassName(string $fqn): string
@@ -205,5 +205,29 @@ final class OrmGeneratorService
         }
 
         return $filtered;
+    }
+
+    /**
+     * @param array<string, string> $classFiles
+     */
+    private function resolvePhpMutationTargetClass(\App\Tools\Schemas\Pipeline\AnalysisBatchSchema $batch, array $classFiles): string
+    {
+        $className = $batch->className;
+        $short = strtolower($this->shortClassName($className));
+
+        foreach ($batch->hierarchyClasses as $candidate) {
+            if (!is_string($candidate) || strtolower($this->shortClassName($candidate)) !== $short) {
+                continue;
+            }
+
+            $filePath = $classFiles[$candidate] ?? '';
+            $isBaseByNamespace = stripos($candidate, '\\_base\\') !== false || stripos($candidate, '\\base\\') !== false;
+            $isBaseByPath = is_string($filePath) && str_contains(strtolower(str_replace('\\', '/', $filePath)), '/_base/');
+            if ($isBaseByNamespace || $isBaseByPath) {
+                return $candidate;
+            }
+        }
+
+        return $className;
     }
 }

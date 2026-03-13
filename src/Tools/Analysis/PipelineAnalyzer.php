@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tools\Analysis;
 
 use App\Tools\Schemas\Pipeline\AnalyzedModelSchema;
+use App\Tools\Schemas\Pipeline\AnalysisBatchSchema;
 use App\Tools\Schemas\Pipeline\AnalysisResultSchema;
 use App\Tools\Schemas\Pipeline\Diagnostic;
 use App\Tools\Schemas\Pipeline\IntrospectionResultSchema;
@@ -17,6 +18,11 @@ use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
 
 final class PipelineAnalyzer
 {
+    public function __construct(
+        private readonly ?AnalysisBatchBuilder $batchBuilder = null,
+    ) {
+    }
+
     public function analyze(IntrospectionResultSchema $input): AnalysisResultSchema
     {
         $models = $input->models;
@@ -42,7 +48,8 @@ final class PipelineAnalyzer
             );
         }
 
-        $diagnostics = $this->collectDiagnostics($analyzedModels, $input->database);
+        $batches = ($this->batchBuilder ?? new AnalysisBatchBuilder())->build($analyzedModels, $input->database, $input->hierarchies);
+        $diagnostics = $this->collectDiagnostics($batches, $input->database);
 
         return new AnalysisResultSchema(
             models: $analyzedModels,
@@ -61,16 +68,17 @@ final class PipelineAnalyzer
     }
 
     /**
-     * @param array<string, AnalyzedModelSchema> $analyzedModels
+     * @param array<int, AnalysisBatchSchema> $batches
      * @return array<Diagnostic>
      */
-    private function collectDiagnostics(array $analyzedModels, DatabaseIntrospectionDto $schema): array
+    private function collectDiagnostics(array $batches, DatabaseIntrospectionDto $schema): array
     {
         $diagnostics = [];
-        $schemaIndex = $this->indexTablesCaseInsensitive($schema);
         $referencedTables = [];
 
-            foreach ($analyzedModels as $className => $analyzedModel) {
+        foreach ($batches as $batch) {
+            $className = $batch->className;
+            $analyzedModel = $batch->analyzedModel;
             foreach ($analyzedModel->relations as $decision) {
                 if ($decision->rejectionReason === null) {
                     continue;
@@ -95,7 +103,7 @@ final class PipelineAnalyzer
                 continue;
             }
 
-            $table = $this->findTableByName($schemaIndex, $analyzedModel->resolvedTable);
+            $table = $batch->table;
             if ($table === null) {
                 $diagnostics[] = new Diagnostic(
                     severity: 'error',
@@ -230,27 +238,6 @@ final class PipelineAnalyzer
         }
 
         return false;
-    }
-
-    /**
-     * @return array<string, TableIntrospectionDto>
-     */
-    private function indexTablesCaseInsensitive(DatabaseIntrospectionDto $schema): array
-    {
-        $index = [];
-        foreach ($schema->tables as $table) {
-            $index[strtolower($table->name)] = $table;
-        }
-
-        return $index;
-    }
-
-    /**
-     * @param array<string, TableIntrospectionDto> $schemaTableIndex
-     */
-    private function findTableByName(array $schemaTableIndex, string $name): ?TableIntrospectionDto
-    {
-        return $schemaTableIndex[strtolower($name)] ?? null;
     }
 
     /**

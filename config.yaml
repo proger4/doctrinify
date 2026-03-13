@@ -5,7 +5,7 @@ base_classes:
 
 doctrine_xml_path: 'sandbox/doctrine'
 
-schema_path: 'tests/_data/mock/database/schema.sql'
+schema_path: 'tests/_data/oracle/schema.sql'
 
 blacklist:
   - 'app\\models\\Old*'

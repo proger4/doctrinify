@@ -5,10 +5,10 @@ base_classes:
 
 doctrine_xml_path: 'tests/_output/generated/doctrine'
 
-schema_path: 'tests/_data/mock/database/schema.sql'
+schema_path: 'tests/_data/oracle/schema.sql'
 
 database:
-  dsn: 'mysql:host=localhost;dbname=mock_legacy'
+  dsn: 'oci:dbname=mock_legacy'
   username: 'root'
   password: ''
 

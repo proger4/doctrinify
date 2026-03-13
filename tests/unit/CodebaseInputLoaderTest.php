@@ -23,7 +23,7 @@ final class CodebaseInputLoaderTest extends Unit
     {
         $configPath = $this->tmpRoot . '/with-classlist.yaml';
         file_put_contents($this->tmpRoot . '/classlist.txt', "app\\models\\User\napp\\models\\Product\n");
-        file_put_contents($configPath, $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/mock/database/schema.sql'));
+        file_put_contents($configPath, $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/oracle/schema.sql'));
 
         $loader = new CodebaseInputLoader($this->projectRoot);
         $input = $loader->load($configPath, true);
@@ -36,7 +36,7 @@ final class CodebaseInputLoaderTest extends Unit
     public function testMissingClassListFallsBackToAutoscan(): void
     {
         $configPath = $this->tmpRoot . '/no-classlist.yaml';
-        file_put_contents($configPath, $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/mock/database/schema.sql'));
+        file_put_contents($configPath, $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/oracle/schema.sql'));
 
         $loader = new CodebaseInputLoader($this->projectRoot);
         $input = $loader->load($configPath, true);
@@ -51,7 +51,7 @@ final class CodebaseInputLoaderTest extends Unit
     public function testMissingConfiguredClassListFallsBackToAutoscan(): void
     {
         $configPath = $this->tmpRoot . '/missing-configured-classlist.yaml';
-        $yaml = $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/mock/database/schema.sql')
+        $yaml = $this->baseConfigYaml('tests/_data/mock/models', 'tests/_data/oracle/schema.sql')
             . "\nclasslist_path: 'tests/_output/missing-classlist.txt'\n";
         file_put_contents($configPath, $yaml);
 
@@ -73,13 +73,38 @@ final class CodebaseInputLoaderTest extends Unit
         );
 
         $configPath = $this->tmpRoot . '/autoscan-filter.yaml';
-        file_put_contents($configPath, $this->baseConfigYaml('tests/_output/codebase_loader/models', 'tests/_data/mock/database/schema.sql'));
+        file_put_contents($configPath, $this->baseConfigYaml('tests/_output/codebase_loader/models', 'tests/_data/oracle/schema.sql'));
 
         $loader = new CodebaseInputLoader($this->projectRoot);
         $input = $loader->load($configPath, true);
 
         $this->assertNotContains('app\\models\\TestGhost', $input->classes);
         $this->assertNotContains('app\\models\\BaseModel', $input->classes);
+    }
+
+    public function testSupportsPathAliasesFromConfig(): void
+    {
+        $configPath = $this->tmpRoot . '/with-aliases.yaml';
+        file_put_contents($this->tmpRoot . '/classlist.txt', "app\\models\\User\n");
+        file_put_contents($configPath, <<<YAML
+path_aliases:
+  mock: tests/_data/mock
+models_path: '@mock/models'
+classlist_path: 'tests/_output/codebase_loader/classlist.txt'
+base_classes:
+  - 'app\\models\\BaseModel'
+doctrine_xml_path: 'tests/_output/generated/doctrine'
+schema_path: 'tests/_data/oracle/schema.sql'
+flags:
+  generate_doctrine_xml: true
+  generate_php_accessors: true
+YAML);
+
+        $loader = new CodebaseInputLoader($this->projectRoot);
+        $input = $loader->load($configPath, true);
+
+        $this->assertSame(['app\\models\\User'], $input->classes);
+        $this->assertArrayHasKey('app\\models\\User', $input->classFiles);
     }
 
     private function baseConfigYaml(string $modelsPath, string $schemaPath): string

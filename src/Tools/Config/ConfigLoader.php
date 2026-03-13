@@ -25,14 +25,40 @@ final class ConfigLoader
 
     public function resolvePath(string $projectRoot, string $path): string
     {
-        if ($path === '') {
-            return $projectRoot;
+        return (new PathResolver($projectRoot))->resolve($path);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function resolvePathWithConfig(string $projectRoot, string $path, array $config): string
+    {
+        return (new PathResolver($projectRoot, $this->extractAliases($config)))->resolve($path);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     * @return array<string, string>
+     */
+    public function extractAliases(array $config): array
+    {
+        $aliases = [
+            'tools' => 'src/Tools',
+        ];
+
+        $aliasConfig = $config['path_aliases'] ?? (($config['paths']['aliases'] ?? null));
+        if (!is_array($aliasConfig)) {
+            return $aliases;
         }
 
-        if ($path[0] === '/') {
-            return $path;
+        foreach ($aliasConfig as $name => $target) {
+            if (!is_string($name) || trim($name) === '' || !is_string($target) || trim($target) === '') {
+                continue;
+            }
+
+            $aliases[$name] = trim($target);
         }
 
-        return rtrim($projectRoot, '/') . '/' . ltrim($path, './');
+        return $aliases;
     }
 }

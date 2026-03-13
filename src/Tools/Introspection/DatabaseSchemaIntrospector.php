@@ -8,12 +8,13 @@ use App\Tools\Database\SchemaDumpParser;
 use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
 
 final class DatabaseSchemaIntrospector
+    implements PathIntrospectorInterface
 {
     public function __construct(private readonly SchemaDumpParser $schemaDumpParser)
     {
     }
 
-    public function introspect(string $schemaPath): DatabaseIntrospectionDto
+    public function introspect(string $schemaPath, array $options = []): DatabaseIntrospectionDto
     {
         return $this->schemaDumpParser->parseFile($schemaPath);
     }

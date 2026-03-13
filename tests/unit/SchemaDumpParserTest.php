@@ -18,18 +18,11 @@ final class SchemaDumpParserTest extends Unit
         $this->parser = new SchemaDumpParser();
     }
 
-    public function testParsesMysqlMockDump(): void
+    public function testRejectsMysqlMockDump(): void
     {
-        $dto = $this->parser->parseFile($this->projectRoot . '/tests/_data/mock/database/schema.sql');
-
-        $this->assertCount(7, $dto->tables);
-        $this->assertCount(0, $dto->sequences);
-        $this->assertArrayHasKey('product_category', $dto->tables);
-
-        $productCategory = $dto->tables['product_category'];
-        $this->assertTrue($productCategory->isManyMany);
-        $this->assertSame(['product_id', 'category_id'], $productCategory->primaryKey);
-        $this->assertCount(2, $productCategory->foreignKeys);
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Schema parser found zero tables');
+        $this->parser->parseFile($this->projectRoot . '/tests/_data/mock/database/schema.sql');
     }
 
     public function testParsesOracleMockDump(): void

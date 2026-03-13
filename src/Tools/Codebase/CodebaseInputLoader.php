@@ -37,7 +37,7 @@ final class CodebaseInputLoader
             throw new \RuntimeException('Invalid config: "doctrine_xml_path" must be a non-empty string');
         }
 
-        $modelsPath = $loader->resolvePath($this->projectRoot, $config['models_path']);
+        $modelsPath = $loader->resolvePathWithConfig($this->projectRoot, $config['models_path'], $config);
         $classListPath = $this->resolveClassListPath($loader, $resolvedConfigPath, $config);
         $flags = is_array($config['flags'] ?? null) ? $config['flags'] : [];
         $baseClasses = array_values(array_filter(array_map(
@@ -60,9 +60,10 @@ final class CodebaseInputLoader
 
         $defaultSchemaPath = dirname($resolvedConfigPath) . '/database/schema.sql';
         $schemaPathConfig = $config['schema_path'] ?? $defaultSchemaPath;
-        $schemaPath = $loader->resolvePath(
+        $schemaPath = $loader->resolvePathWithConfig(
             $this->projectRoot,
-            is_string($schemaPathConfig) && $schemaPathConfig !== '' ? $schemaPathConfig : $defaultSchemaPath
+            is_string($schemaPathConfig) && $schemaPathConfig !== '' ? $schemaPathConfig : $defaultSchemaPath,
+            $config
         );
 
         $classes = [];
@@ -79,7 +80,7 @@ final class CodebaseInputLoader
         }
         $classes = $this->sanitizeCandidateClasses($classes, $baseClasses, $blacklist);
 
-        $analysisClasses = $this->expandWithAncestors($classes, $fileIndex, $baseClasses, $blacklist);
+        $analysisClasses = $this->expandWithAncestorsAndDescendants($classes, $fileIndex, $baseClasses, $blacklist);
         $classFiles = [];
         foreach ($analysisClasses as $className) {
             if (isset($fileIndex[$className])) {
@@ -92,11 +93,12 @@ final class CodebaseInputLoader
         return new CodebaseInput(
             config: new GeneratorConfig(
                 modelsPath: $modelsPath,
-                xmlOutputPath: $loader->resolvePath($this->projectRoot, $config['doctrine_xml_path']),
+                xmlOutputPath: $loader->resolvePathWithConfig($this->projectRoot, $config['doctrine_xml_path'], $config),
                 schemaPath: $schemaPath,
                 classListPath: $classListPath,
                 generateXml: (bool) ($flags['generate_doctrine_xml'] ?? true),
                 generatePhp: (bool) ($flags['generate_php_accessors'] ?? true),
+                tracePipeline: (bool) ($flags['trace_pipeline'] ?? false),
                 baseClasses: $baseClasses,
                 blacklist: $blacklist,
                 modelScanExcludeDirs: $scanExcluded,
@@ -143,7 +145,7 @@ final class CodebaseInputLoader
     {
         $configured = $config['classlist_path'] ?? $config['class_list_path'] ?? null;
         if (is_string($configured) && trim($configured) !== '') {
-            return $loader->resolvePath($this->projectRoot, $configured);
+            return $loader->resolvePathWithConfig($this->projectRoot, $configured, $config);
         }
 
         return dirname($resolvedConfigPath) . '/classlist.txt';
@@ -268,7 +270,7 @@ final class CodebaseInputLoader
      * @param list<string> $blacklist
      * @return array<string>
      */
-    private function expandWithAncestors(array $classes, array $fileIndex, array $baseClasses, array $blacklist): array
+    private function expandWithAncestorsAndDescendants(array $classes, array $fileIndex, array $baseClasses, array $blacklist): array
     {
         $lookup = array_fill_keys($classes, true);
         $baseLookup = array_fill_keys($baseClasses, true);
@@ -292,6 +294,31 @@ final class CodebaseInputLoader
             if (isset($fileIndex[$parent]) && !isset($lookup[$parent])) {
                 $lookup[$parent] = true;
                 $stack[] = $parent;
+            }
+        }
+
+        $out = array_keys($lookup);
+        $childrenByParent = [];
+        foreach ($fileIndex as $className => $meta) {
+            $parent = $meta['extends'];
+            if (is_string($parent) && $parent !== '') {
+                $childrenByParent[$parent][] = $className;
+            }
+        }
+
+        $stack = $out;
+        while ($stack !== []) {
+            $className = array_pop($stack);
+            if (!is_string($className)) {
+                continue;
+            }
+
+            foreach ($childrenByParent[$className] ?? [] as $child) {
+                if (isset($lookup[$child]) || isset($baseLookup[$child]) || $this->matchesWildcardBlacklist($child, $blacklist)) {
+                    continue;
+                }
+                $lookup[$child] = true;
+                $stack[] = $child;
             }
         }
 

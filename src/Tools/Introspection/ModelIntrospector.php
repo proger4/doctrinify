@@ -8,6 +8,7 @@ use App\Tools\AST\AstFacade;
 use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
 
 final class ModelIntrospector
+    implements PathIntrospectorInterface
 {
     public function __construct(private readonly ?AstFacade $astFacade = null)
     {
@@ -38,7 +39,20 @@ final class ModelIntrospector
         ];
     }
 
-    public function introspect(string $className, string $file): ModelIntrospectionSchema
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function introspect(string $path, array $options = []): ModelIntrospectionSchema
+    {
+        $className = $options['class'] ?? null;
+        if (!is_string($className) || $className === '') {
+            throw new \InvalidArgumentException('ModelIntrospector requires options["class"]');
+        }
+
+        return $this->introspectModel($className, $path);
+    }
+
+    public function introspectModel(string $className, string $file): ModelIntrospectionSchema
     {
         $meta = ($this->astFacade ?? new AstFacade())->introspectModel($className, $file, $this->relationSqlModifiers());
         if ($meta !== null) {
