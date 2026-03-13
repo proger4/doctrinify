@@ -73,8 +73,8 @@ final class OrmGeneratorServiceTest extends Unit
     {
         $reportPath = $this->projectRoot . '/tests/_output/generated/doctrine/mismatch-report.txt';
         $report = (string) file_get_contents($reportPath);
-        $this->assertStringContainsString('relation `categoriesWithSql` rejected', $report);
-        $this->assertStringContainsString('relation `itemsWithCondition` rejected', $report);
+        $this->assertStringContainsString('relation `categoriesWithSql` has SQL modifiers', $report);
+        $this->assertStringContainsString('relation `itemsWithCondition` has SQL modifiers', $report);
     }
 
     public function testGenerateWithoutClassListFallsBackToAutoscan(): void

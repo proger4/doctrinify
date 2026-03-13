@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tools\Codegen;
 
+use App\Tools\Naming\ColumnNameMapper;
 use App\Tools\Schemas\Pipeline\AnalyzedModelSchema;
 use App\Tools\Schemas\Pipeline\Diagnostic;
 use App\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
@@ -13,6 +14,11 @@ use App\Tools\Schemas\ToolingProfileInterface;
 
 final class DoctrineXmlCodeGenerator
 {
+    public function __construct(
+        private readonly ?ColumnNameMapper $columnNameMapper = null,
+    ) {
+    }
+
     /**
      * @param array<string, array{table:string, classes:list<string>}> $stiByRoot
      * @param array<string, ModelIntrospectionSchema> $modelMetas
@@ -27,7 +33,9 @@ final class DoctrineXmlCodeGenerator
         ToolingProfileInterface $profile,
         array                   $diagnostics,
     ): string {
+        $nameMapper = $this->columnNameMapper ?? new ColumnNameMapper();
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><doctrine-mapping/>');
+        $effectivePrimaryKey = $this->effectivePrimaryKey($analyzedModel, $table);
 
         $rootAttributes = $profile->getDoctrineXmlRootAttributes();
         $deferredAttributes = [];
@@ -44,22 +52,24 @@ final class DoctrineXmlCodeGenerator
         $entity->addAttribute('name', $className);
         $entity->addAttribute('table', $analyzedModel->resolvedTable ?? '');
 
-        foreach ($table->primaryKey as $pk) {
+        foreach ($effectivePrimaryKey as $pk) {
             $column = $this->findFieldByName($table, $pk);
             $id = $entity->addChild('id');
-            $id->addAttribute('name', $pk);
-            $id->addAttribute('type', $this->mapSqlTypeToDoctrineType($column?->type ?? 'VARCHAR(255)'));
+            $id->addAttribute('name', $nameMapper->toFieldName($pk));
+            $id->addAttribute('column', $pk);
+            $id->addAttribute('type', $this->mapSqlTypeToDoctrineType($column instanceof ColumnIntrospectionDto ? $column->type : 'VARCHAR(255)'));
             $generator = $id->addChild('generator');
-            $generator->addAttribute('strategy', count($table->primaryKey) > 1 ? 'NONE' : 'AUTO');
+            $generator->addAttribute('strategy', count($effectivePrimaryKey) > 1 ? 'NONE' : 'AUTO');
         }
 
         foreach ($table->fields as $field) {
-            if ($this->containsField($table->primaryKey, $field->name)) {
+            if ($this->containsField($effectivePrimaryKey, $field->name)) {
                 continue;
             }
 
             $xmlField = $entity->addChild('field');
-            $xmlField->addAttribute('name', $field->name);
+            $xmlField->addAttribute('name', $nameMapper->toFieldName($field->name));
+            $xmlField->addAttribute('column', $field->name);
             $xmlField->addAttribute('type', $this->mapSqlTypeToDoctrineType($field->type));
             if ($field->nullable) {
                 $xmlField->addAttribute('nullable', 'true');
@@ -238,5 +248,26 @@ final class DoctrineXmlCodeGenerator
         }
 
         return false;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function effectivePrimaryKey(AnalyzedModelSchema $analyzedModel, TableIntrospectionDto $table): array
+    {
+        $modelPrimaryKey = $analyzedModel->model->primaryKey;
+        if ($modelPrimaryKey === []) {
+            return $table->primaryKey;
+        }
+
+        $lookup = [];
+        foreach (array_merge($modelPrimaryKey, $table->primaryKey) as $key) {
+            if ($key === '') {
+                continue;
+            }
+            $lookup[strtolower($key)] = $key;
+        }
+
+        return array_values($lookup);
     }
 }

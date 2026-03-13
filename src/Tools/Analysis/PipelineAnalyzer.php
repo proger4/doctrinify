@@ -30,7 +30,7 @@ final class PipelineAnalyzer
                 $rejectionReason = $this->relationRejectionReason($relation);
                 $decisions[] = new RelationDecisionSchema(
                     relation: $relation,
-                    accepted: $rejectionReason === null,
+                    accepted: true,
                     rejectionReason: $rejectionReason,
                 );
             }
@@ -70,16 +70,16 @@ final class PipelineAnalyzer
         $schemaIndex = $this->indexTablesCaseInsensitive($schema);
         $referencedTables = [];
 
-        foreach ($analyzedModels as $className => $analyzedModel) {
+            foreach ($analyzedModels as $className => $analyzedModel) {
             foreach ($analyzedModel->relations as $decision) {
-                if ($decision->accepted) {
+                if ($decision->rejectionReason === null) {
                     continue;
                 }
                 $diagnostics[] = new Diagnostic(
                     severity: 'warning',
-                    message: sprintf('relation `%s` rejected: %s', $decision->relation->name, $decision->rejectionReason ?? 'rejected'),
+                    message: sprintf('relation `%s` has SQL modifiers: %s', $decision->relation->name, $decision->rejectionReason),
                     context: [
-                        'code' => 'RELATION_REJECTED',
+                        'code' => 'RELATION_SQL_MODIFIERS',
                         'class' => $className,
                         'relation' => $decision->relation->name,
                     ],

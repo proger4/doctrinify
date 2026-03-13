@@ -13,7 +13,7 @@ use App\Tools\Schemas\DBIntrospection\DatabaseIntrospectionDto;
 
 final class PipelineAnalyzerTest extends Unit
 {
-    public function testRejectsSqlRelationAndExposesReasonInDiagnostics(): void
+    public function testKeepsSqlRelationAndReportsModifiersInDiagnostics(): void
     {
         $model = new ModelIntrospectionSchema(
             className: 'app\\models\\X',
@@ -45,13 +45,13 @@ final class PipelineAnalyzerTest extends Unit
 
         $this->assertCount(1, $result->models['app\\models\\X']->relations);
         $decision = $result->models['app\\models\\X']->relations[0];
-        $this->assertFalse($decision->accepted);
+        $this->assertTrue($decision->accepted);
         $this->assertNotNull($decision->rejectionReason);
         $this->assertStringContainsString('where', (string) $decision->rejectionReason);
         $this->assertStringContainsString('joinType', (string) $decision->rejectionReason);
 
         $report = $analyzer->renderReport($result->diagnostics);
-        $this->assertStringContainsString('relation `badRelation` rejected', $report);
-        $this->assertStringContainsString('RELATION_REJECTED', $report);
+        $this->assertStringContainsString('relation `badRelation` has SQL modifiers', $report);
+        $this->assertStringContainsString('RELATION_SQL_MODIFIERS', $report);
     }
 }
