@@ -7,8 +7,8 @@ namespace App\Tools\Schemas\DBIntrospection;
 final readonly class ForeignKeyIntrospectionDto
 {
     /**
-     * @param list<string> $columns
-     * @param list<string> $referencedColumns
+     * @param array<string> $columns
+     * @param array<string> $referencedColumns
      */
     public function __construct(
         public string $name,

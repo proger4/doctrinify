@@ -37,7 +37,9 @@ final class OracleSchemaDumpParser
         foreach ($tables as $tableName => $tableData) {
             $primaryKey = $this->normalizeIdentifierList($tableData['primaryKey']);
             $uniqueConstraints = array_map(
-                fn (array $constraint): array => $this->normalizeIdentifierList($constraint),
+                function (array $constraint): array {
+                    return $this->normalizeIdentifierList($constraint);
+                },
                 $tableData['uniqueConstraints']
             );
 
@@ -86,7 +88,7 @@ final class OracleSchemaDumpParser
             $tableName = $this->normalizeIdentifier($match[1]);
             $constraintName = $this->normalizeIdentifier($match[2]);
             $constraintType = strtoupper(preg_replace('/\s+/', ' ', trim($match[3])) ?? '');
-            $columns = $this->parseIdentifierList($match[4] ?? '');
+            $columns = $this->parseIdentifierList($match[4]);
 
             if (!isset($tables[$tableName])) {
                 $tables[$tableName] = [
@@ -169,7 +171,7 @@ final class OracleSchemaDumpParser
 
                 $columnName = $this->normalizeIdentifier($colMatch[1]);
                 $columnType = strtoupper(trim($colMatch[2]));
-                $tail = strtoupper($colMatch[3] ?? '');
+                $tail = strtoupper($colMatch[3]);
 
                 $fields[$columnName] = new ColumnIntrospectionDto(
                     name: $columnName,
@@ -260,7 +262,7 @@ final class OracleSchemaDumpParser
     }
 
     /**
-     * @return list<string>
+     * @return array<string>
      */
     private function parseIdentifierList(string $raw): array
     {
@@ -270,7 +272,7 @@ final class OracleSchemaDumpParser
 
     /**
      * @param list<string> $items
-     * @return list<string>
+     * @return array<string>
      */
     private function normalizeIdentifierList(array $items): array
     {
@@ -300,7 +302,7 @@ final class OracleSchemaDumpParser
     }
 
     /**
-     * @return list<string>
+     * @return array<string>
      */
     private function splitTopLevelByComma(string $value): array
     {
@@ -366,4 +368,3 @@ final class OracleSchemaDumpParser
         return (string) preg_replace('/^\s*--.*$/m', '', $sql);
     }
 }
-

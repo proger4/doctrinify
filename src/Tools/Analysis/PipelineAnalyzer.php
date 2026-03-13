@@ -62,7 +62,7 @@ final class PipelineAnalyzer
 
     /**
      * @param array<string, AnalyzedModelSchema> $analyzedModels
-     * @return list<Diagnostic>
+     * @return array<Diagnostic>
      */
     private function collectDiagnostics(array $analyzedModels, DatabaseIntrospectionDto $schema): array
     {
@@ -156,7 +156,7 @@ final class PipelineAnalyzer
 
     /**
      * @param array<string, ModelIntrospectionSchema> $metas
-     * @param list<ModelHierarchySchema> $hierarchies
+     * @param array<ModelHierarchySchema> $hierarchies
      * @return array<string, array{table:string, classes:list<string>}>
      */
     private function buildSingleTableInheritanceMap(array $metas, array $hierarchies): array
@@ -254,7 +254,7 @@ final class PipelineAnalyzer
     }
 
     /**
-     * @param list<Diagnostic> $diagnostics
+     * @param array<Diagnostic> $diagnostics
      */
     public function renderReport(array $diagnostics): string
     {

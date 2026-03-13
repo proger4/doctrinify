@@ -7,7 +7,7 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class ModelHierarchySchema
 {
     /**
-     * @param list<string> $classes
+     * @param array<string> $classes
      */
     public function __construct(
         public string $rootClass,

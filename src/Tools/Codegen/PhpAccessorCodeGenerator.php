@@ -17,7 +17,7 @@ final class PhpAccessorCodeGenerator
     }
 
     /**
-     * @param list<Diagnostic> $diagnostics
+     * @param array<Diagnostic> $diagnostics
      */
     public function buildAstInstruction(
         string                  $className,

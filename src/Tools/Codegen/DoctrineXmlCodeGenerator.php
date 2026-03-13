@@ -16,7 +16,7 @@ final class DoctrineXmlCodeGenerator
     /**
      * @param array<string, array{table:string, classes:list<string>}> $stiByRoot
      * @param array<string, ModelIntrospectionSchema> $modelMetas
-     * @param list<Diagnostic> $diagnostics
+     * @param array<Diagnostic> $diagnostics
      */
     public function generate(
         string                  $className,
@@ -227,7 +227,7 @@ final class DoctrineXmlCodeGenerator
     }
 
     /**
-     * @param list<string> $haystack
+     * @param array<string> $haystack
      */
     private function containsField(array $haystack, string $needle): bool
     {

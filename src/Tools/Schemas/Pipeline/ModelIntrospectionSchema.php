@@ -7,10 +7,10 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class ModelIntrospectionSchema
 {
     /**
-     * @param list<ModelRelationSchema> $relations
-     * @param list<string> $rules
+     * @param array<ModelRelationSchema> $relations
+     * @param array<string> $rules
      * @param array<string, string> $attributeLabels
-     * @param list<string> $primaryKey
+     * @param array<string> $primaryKey
      */
     public function __construct(
         public string $className,

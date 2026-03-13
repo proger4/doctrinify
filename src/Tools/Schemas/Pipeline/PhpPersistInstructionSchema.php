@@ -7,8 +7,8 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class PhpPersistInstructionSchema
 {
     /**
-     * @param list<object> $astNodes
-     * @param list<string> $headerComments
+     * @param array<object> $astNodes
+     * @param array<string> $headerComments
      */
     public function __construct(
         public string $targetPath,

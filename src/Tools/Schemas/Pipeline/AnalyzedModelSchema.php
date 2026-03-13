@@ -7,7 +7,7 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class AnalyzedModelSchema
 {
     /**
-     * @param list<RelationDecisionSchema> $relations
+     * @param array<RelationDecisionSchema> $relations
      */
     public function __construct(
         public ModelIntrospectionSchema $model,

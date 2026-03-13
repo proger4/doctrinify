@@ -10,7 +10,7 @@ final readonly class IntrospectionResultSchema
 {
     /**
      * @param array<string, ModelIntrospectionSchema> $models
-     * @param list<ModelHierarchySchema> $hierarchies
+     * @param array<ModelHierarchySchema> $hierarchies
      */
     public function __construct(
         public array $models,

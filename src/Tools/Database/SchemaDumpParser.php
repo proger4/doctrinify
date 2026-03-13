@@ -140,20 +140,22 @@ final class SchemaDumpParser
     }
 
     /**
-     * @return list<string>
+     * @return array<int, string>
      */
     private function parseIdentifierList(string $raw): array
     {
         return array_values(array_filter(array_map(
-            static fn (string $chunk): string => trim($chunk, " \t\n\r\0\x0B`\""),
+            static function (string $chunk): string {
+                return trim($chunk, " \t\n\r\0\x0B`\"");
+            },
             explode(',', $raw)
         )));
     }
 
     /**
-     * @param list<string> $fkColumns
-     * @param list<string> $primaryKey
-     * @param list<list<string>> $uniqueConstraints
+     * @param array<int, string> $fkColumns
+     * @param array<int, string> $primaryKey
+     * @param array<int, array<int, string>> $uniqueConstraints
      */
     private function isOneToOne(array $fkColumns, array $primaryKey, array $uniqueConstraints): bool
     {
@@ -171,7 +173,7 @@ final class SchemaDumpParser
     }
 
     /**
-     * @param list<string> $primaryKey
+     * @param array<int, string> $primaryKey
      * @param array<string, ForeignKeyIntrospectionDto> $foreignKeys
      */
     private function isManyManyTable(array $primaryKey, array $foreignKeys): bool
@@ -190,8 +192,8 @@ final class SchemaDumpParser
     }
 
     /**
-     * @param list<string> $left
-     * @param list<string> $right
+     * @param array<string> $left
+     * @param array<string> $right
      */
     private function sameColumnSet(array $left, array $right): bool
     {

@@ -34,8 +34,8 @@ final class YamlToolingProfile implements ToolingProfileInterface
      */
     public function getDoctrineXmlRootAttributes(): array
     {
-        $profile = $this->profileConfig();
-        $attributes = $profile['doctrine_xml']['root_attributes'] ?? null;
+        $doctrineXml = $this->doctrineXmlConfig();
+        $attributes = $doctrineXml['root_attributes'] ?? null;
         if (!is_array($attributes)) {
             return self::DEFAULT_ROOT_ATTRIBUTES;
         }
@@ -53,28 +53,28 @@ final class YamlToolingProfile implements ToolingProfileInterface
 
     public function getDoctrineXmlFilenamePattern(): string
     {
-        $profile = $this->profileConfig();
-        $value = $profile['doctrine_xml']['filename_pattern'] ?? '{class}.orm.xml';
+        $doctrineXml = $this->doctrineXmlConfig();
+        $value = $doctrineXml['filename_pattern'] ?? '{class}.orm.xml';
         return is_string($value) && $value !== '' ? $value : '{class}.orm.xml';
     }
 
     public function getGenerationNaming(): string
     {
-        $profile = $this->profileConfig();
-        $value = $profile['regeneration']['naming'] ?? 'doctrinify';
+        $regeneration = $this->regenerationConfig();
+        $value = $regeneration['naming'] ?? 'doctrinify';
         return is_string($value) && trim($value) !== '' ? trim($value) : 'doctrinify';
     }
 
     public function shouldAddGeneratedMarker(): bool
     {
-        $profile = $this->profileConfig();
-        return (bool) ($profile['regeneration']['add_generated_marker'] ?? true);
+        $regeneration = $this->regenerationConfig();
+        return (bool) ($regeneration['add_generated_marker'] ?? true);
     }
 
     public function shouldEmbedDiagnostics(): bool
     {
-        $profile = $this->profileConfig();
-        return (bool) ($profile['regeneration']['embed_diagnostics'] ?? false);
+        $regeneration = $this->regenerationConfig();
+        return (bool) ($regeneration['embed_diagnostics'] ?? false);
     }
 
     /**
@@ -91,5 +91,23 @@ final class YamlToolingProfile implements ToolingProfileInterface
         }
 
         return [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function doctrineXmlConfig(): array
+    {
+        $profile = $this->profileConfig();
+        return is_array($profile['doctrine_xml'] ?? null) ? $profile['doctrine_xml'] : [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function regenerationConfig(): array
+    {
+        $profile = $this->profileConfig();
+        return is_array($profile['regeneration'] ?? null) ? $profile['regeneration'] : [];
     }
 }

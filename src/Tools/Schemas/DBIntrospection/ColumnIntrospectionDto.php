@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tools\Schemas\DBIntrospection;
 
-final readonly class ColumnIntrospectionDto
+final class ColumnIntrospectionDto
 {
+    public string $name;
+    public string $type;
+    public bool $nullable;
+
     public function __construct(
-        public string $name,
-        public string $type,
-        public bool $nullable,
+        string $name,
+        string $type,
+        bool $nullable
     ) {
+        $this->name = $name;
+        $this->type = $type;
+        $this->nullable = $nullable;
     }
 }
-

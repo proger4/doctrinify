@@ -118,7 +118,6 @@ final class OrmGeneratorService
                 $xmlFilename = $this->xmlCodeGenerator->buildFilename($className, $profile);
             }
 
-            $php = null;
             $phpInstruction = null;
             if ($codebase->config->generatePhp) {
                 $modelFile = $codebase->classFiles[$className] ?? ($codebase->config->modelsPath . '/' . $this->shortClassName($className) . '.php');
@@ -193,8 +192,8 @@ final class OrmGeneratorService
     }
 
     /**
-     * @param list<Diagnostic> $diagnostics
-     * @return list<Diagnostic>
+     * @param array<Diagnostic> $diagnostics
+     * @return array<Diagnostic>
      */
     private function diagnosticsForClass(array $diagnostics, string $className): array
     {

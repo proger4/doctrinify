@@ -7,8 +7,8 @@ namespace App\Tools\AST;
 final readonly class AstClassMutationPlan
 {
     /**
-     * @param list<object> $nodes
-     * @param list<string> $headerComments
+     * @param array<object> $nodes
+     * @param array<string> $headerComments
      */
     public function __construct(
         public string $targetPath,

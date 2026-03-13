@@ -7,7 +7,7 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class GenerationResultSchema
 {
     /**
-     * @param list<GeneratedArtifactSchema> $artifacts
+     * @param array<GeneratedArtifactSchema> $artifacts
      */
     public function __construct(
         public array $artifacts,

@@ -30,15 +30,26 @@ final class CodebaseInputLoader
             throw new \RuntimeException('Invalid config: missing required paths');
         }
 
-        $modelsPath = $loader->resolvePath($this->projectRoot, (string) $config['models_path']);
+        if (!is_string($config['models_path']) || $config['models_path'] === '') {
+            throw new \RuntimeException('Invalid config: "models_path" must be a non-empty string');
+        }
+        if (!is_string($config['doctrine_xml_path']) || $config['doctrine_xml_path'] === '') {
+            throw new \RuntimeException('Invalid config: "doctrine_xml_path" must be a non-empty string');
+        }
+
+        $modelsPath = $loader->resolvePath($this->projectRoot, $config['models_path']);
         $classListPath = $this->resolveClassListPath($loader, $resolvedConfigPath, $config);
         $flags = is_array($config['flags'] ?? null) ? $config['flags'] : [];
         $baseClasses = array_values(array_filter(array_map(
-            fn (string $v): string => $this->normalizeClassPattern($v),
+            function (string $v): string {
+                return $this->normalizeClassPattern($v);
+            },
             array_map('strval', is_array($config['base_classes'] ?? null) ? $config['base_classes'] : [])
         )));
         $blacklist = array_values(array_filter(array_map(
-            fn (string $v): string => $this->normalizeClassPattern($v),
+            function (string $v): string {
+                return $this->normalizeClassPattern($v);
+            },
             array_map('strval', is_array($config['blacklist'] ?? null) ? $config['blacklist'] : [])
         )));
 
@@ -47,9 +58,11 @@ final class CodebaseInputLoader
             ? array_values(array_filter(array_map('strval', $config['model_scan_exclude_dirs'])))
             : $defaultExcluded;
 
+        $defaultSchemaPath = dirname($resolvedConfigPath) . '/database/schema.sql';
+        $schemaPathConfig = $config['schema_path'] ?? $defaultSchemaPath;
         $schemaPath = $loader->resolvePath(
             $this->projectRoot,
-            (string) ($config['schema_path'] ?? (dirname($resolvedConfigPath) . '/database/schema.sql'))
+            is_string($schemaPathConfig) && $schemaPathConfig !== '' ? $schemaPathConfig : $defaultSchemaPath
         );
 
         $classes = [];
@@ -79,7 +92,7 @@ final class CodebaseInputLoader
         return new CodebaseInput(
             config: new GeneratorConfig(
                 modelsPath: $modelsPath,
-                xmlOutputPath: $loader->resolvePath($this->projectRoot, (string) $config['doctrine_xml_path']),
+                xmlOutputPath: $loader->resolvePath($this->projectRoot, $config['doctrine_xml_path']),
                 schemaPath: $schemaPath,
                 classListPath: $classListPath,
                 generateXml: (bool) ($flags['generate_doctrine_xml'] ?? true),
@@ -99,7 +112,7 @@ final class CodebaseInputLoader
      * @param list<string> $classes
      * @param list<string> $baseClasses
      * @param list<string> $blacklist
-     * @return list<string>
+     * @return array<string>
      */
     private function sanitizeCandidateClasses(array $classes, array $baseClasses, array $blacklist): array
     {
@@ -152,8 +165,8 @@ final class CodebaseInputLoader
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveCallbackFilterIterator(
                 new \RecursiveDirectoryIterator($modelsPath, \FilesystemIterator::SKIP_DOTS),
-                static function (\SplFileInfo $current) use ($excludeLookup): bool {
-                    if ($current->isDir()) {
+                static function ($current) use ($excludeLookup): bool {
+                    if ($current instanceof \SplFileInfo && $current->isDir()) {
                         return !isset($excludeLookup[strtolower($current->getBasename())]);
                     }
 
@@ -201,7 +214,7 @@ final class CodebaseInputLoader
      * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
      * @param list<string> $baseClasses
      * @param list<string> $blacklist
-     * @return list<string>
+     * @return array<string>
      */
     private function autoDiscoverClasses(array $fileIndex, array $baseClasses, array $blacklist): array
     {
@@ -253,7 +266,7 @@ final class CodebaseInputLoader
      * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
      * @param list<string> $baseClasses
      * @param list<string> $blacklist
-     * @return list<string>
+     * @return array<string>
      */
     private function expandWithAncestors(array $classes, array $fileIndex, array $baseClasses, array $blacklist): array
     {
@@ -290,7 +303,7 @@ final class CodebaseInputLoader
     /**
      * @param list<string> $classes
      * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
-     * @return list<ModelHierarchySchema>
+     * @return array<ModelHierarchySchema>
      */
     private function buildHierarchies(array $classes, array $fileIndex): array
     {
@@ -299,6 +312,7 @@ final class CodebaseInputLoader
         }
 
         $classLookup = array_fill_keys($classes, true);
+        /** @var array<string, Node<string>> $nodes */
         $nodes = [];
         foreach ($classes as $className) {
             $nodes[$className] = new Node($className);
@@ -326,6 +340,10 @@ final class CodebaseInputLoader
         return $hierarchies;
     }
 
+    /**
+     * @param Node<string> $node
+     * @param list<string> $ordered
+     */
     private function collectPreOrder(Node $node, array &$ordered): void
     {
         $value = $node->getValue();
@@ -365,7 +383,7 @@ final class CodebaseInputLoader
     }
 
     /**
-     * @return list<string>
+     * @return array<string>
      */
     private function loadClassList(string $classListPath): array
     {
@@ -374,6 +392,11 @@ final class CodebaseInputLoader
             return [];
         }
 
-        return array_values(array_filter(array_map(static fn (string $line): string => trim($line), $lines)));
+        return array_values(array_filter(array_map(
+            static function (string $line): string {
+                return trim($line);
+            },
+            $lines
+        )));
     }
 }

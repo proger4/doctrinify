@@ -7,9 +7,9 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class GeneratorConfig
 {
     /**
-     * @param list<string> $baseClasses
-     * @param list<string> $blacklist
-     * @param list<string> $modelScanExcludeDirs
+     * @param array<string> $baseClasses
+     * @param array<string> $blacklist
+     * @param array<string> $modelScanExcludeDirs
      */
     public function __construct(
         public string $modelsPath,

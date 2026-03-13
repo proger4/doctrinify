@@ -7,8 +7,8 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class PersistResultSchema
 {
     /**
-     * @param list<string> $xmlFiles
-     * @param list<string> $phpFiles
+     * @param array<string> $xmlFiles
+     * @param array<string> $phpFiles
      */
     public function __construct(
         public array $xmlFiles,

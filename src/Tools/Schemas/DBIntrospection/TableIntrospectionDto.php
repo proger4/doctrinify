@@ -8,9 +8,9 @@ final readonly class TableIntrospectionDto
 {
     /**
      * @param array<string, ColumnIntrospectionDto> $fields
-     * @param list<string> $primaryKey
+     * @param array<string> $primaryKey
      * @param array<string, ForeignKeyIntrospectionDto> $foreignKeys
-     * @param list<list<string>> $uniqueConstraints
+     * @param array<list<string>> $uniqueConstraints
      */
     public function __construct(
         public string $name,

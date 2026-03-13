@@ -7,10 +7,10 @@ namespace App\Tools\Schemas\Pipeline;
 final readonly class CodebaseInput
 {
     /**
-     * @param list<string> $classes
+     * @param array<string> $classes
      * @param array<string, string> $classFiles
-     * @param list<string> $warnings
-     * @param list<ModelHierarchySchema> $hierarchies
+     * @param array<string> $warnings
+     * @param array<ModelHierarchySchema> $hierarchies
      */
     public function __construct(
         public GeneratorConfig $config,

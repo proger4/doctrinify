@@ -14,7 +14,7 @@ final class ModelIntrospector
     }
 
     /**
-     * @return list<string>
+     * @return array<string>
      */
     private function relationSqlModifiers(): array
     {

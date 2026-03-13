@@ -8,7 +8,7 @@ final readonly class ModelRelationSchema
 {
     /**
      * @param array<string, string> $mapping
-     * @param list<string> $queryModifiers
+     * @param array<string> $queryModifiers
      */
     public function __construct(
         public string $name,
