@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use Codeception\Test\Unit;
-use App\Tools\Schemas\YamlProjectProfile;
+use App\Tools\Schemas\YamlToolingProfile;
 
 final class YamlProjectProfileTest extends Unit
 {
     public function testLoadsValuesFromYamlConfig(): void
     {
         $projectRoot = dirname(__DIR__, 2);
-        $profile = YamlProjectProfile::fromFile('tests/_data/mock/config.yaml', $projectRoot);
+        $profile = YamlToolingProfile::fromFile('tests/_data/mock/config.yaml', $projectRoot);
 
         $this->assertSame('{class}.orm.xml', $profile->getDoctrineXmlFilenamePattern());
         $this->assertSame('doctrinify', $profile->getGenerationNaming());
@@ -26,7 +26,7 @@ final class YamlProjectProfileTest extends Unit
 
     public function testDefaultsWhenProjectProfileSectionMissing(): void
     {
-        $profile = new YamlProjectProfile([]);
+        $profile = new YamlToolingProfile([]);
 
         $this->assertSame('{class}.orm.xml', $profile->getDoctrineXmlFilenamePattern());
         $this->assertSame('doctrinify', $profile->getGenerationNaming());
@@ -36,7 +36,7 @@ final class YamlProjectProfileTest extends Unit
 
     public function testSupportsCustomNamingFromToolingConfig(): void
     {
-        $profile = new YamlProjectProfile([
+        $profile = new YamlToolingProfile([
             'tooling' => [
                 'regeneration' => [
                     'naming' => 'acme-doctrine-kit',

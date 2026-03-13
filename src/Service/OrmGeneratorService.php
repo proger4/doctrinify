@@ -19,7 +19,7 @@ use App\Tools\Config\ConfigLoader;
 use App\Tools\Database\SchemaDumpParser;
 use App\Tools\Schemas\DBIntrospection\TableIntrospectionDto;
 use App\Tools\Schemas\ProjectProfileInterface;
-use App\Tools\Schemas\YamlProjectProfile;
+use App\Tools\Schemas\YamlToolingProfile;
 
 final class OrmGeneratorService
 {
@@ -64,7 +64,7 @@ final class OrmGeneratorService
      */
     public function generate(string $configPath): array
     {
-        $profile = $this->projectProfile ?? YamlProjectProfile::fromFile($configPath, $this->projectRoot);
+        $profile = $this->projectProfile ?? YamlToolingProfile::fromFile($configPath, $this->projectRoot);
         $codebase = $this->codebaseLoader->load($configPath, true);
 
         $models = [];
