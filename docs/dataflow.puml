@@ -12,16 +12,9 @@ rectangle "Sandbox Inputs" {
 rectangle "Core Generator (deterministic)" {
     component "tools:orm:generate" as genCmd
     component "OrmGeneratorService" as orm
-    database "Generated XML/PHP\nsandbox/*" as genOut
+    database "Generated XML\nsandbox/doctrine/*.orm.xml" as genOut
+    file "Patched Models\nsandbox/models/*.php" as patched
     file "Mismatch Report\nsandbox/doctrine/mismatch-report.txt" as mismatch
-}
-
-rectangle "AI Sidecar" {
-    file "Workbook\nsrc/Tools/Tasks/test.xlsx" as xlsx
-    component "tools:ai:task-execute" as aiCmd
-    database "Task Artifacts\nvar/tasks/<task_set>/{inputs,prompts,results}" as taskOut
-    component "tools:report:build" as repCmd
-    file "HTML Report\nvar/tasks/<task_set>/reports/*.html" as html
 }
 
 fixtures --> prepCmd
@@ -32,16 +25,7 @@ cfg --> genCmd
 
 genCmd --> orm
 orm --> genOut
+orm --> patched
 orm --> mismatch
-
-xlsx --> aiCmd
-models --> aiCmd
-schema --> aiCmd
-genOut --> aiCmd
-mismatch --> aiCmd
-aiCmd --> taskOut
-
-taskOut --> repCmd
-repCmd --> html
 
 @enduml

@@ -29,7 +29,7 @@ final class CodebaseInputLoaderTest extends Unit
         $input = $loader->load($configPath, true);
 
         $this->assertSame([], $input->warnings);
-        $this->assertSame(['app\\models\\User', 'app\\models\\Product'], $input->classes);
+        $this->assertSame(['app\\models\\Product', 'app\\models\\User'], $input->classes);
         $this->assertArrayHasKey('app\\models\\User', $input->classFiles);
     }
 
@@ -89,7 +89,6 @@ models_path: '{$modelsPath}'
 base_classes:
   - 'app\\models\\BaseModel'
 doctrine_xml_path: 'tests/_output/generated/doctrine'
-generated_php_path: 'tests/_output/generated/classes'
 schema_path: '{$schemaPath}'
 blacklist:
   - 'app\\models\\Old*'
@@ -101,7 +100,6 @@ model_scan_exclude_dirs:
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
-  use_ast_parsing: true
 YAML;
     }
 

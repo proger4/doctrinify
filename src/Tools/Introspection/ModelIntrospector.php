@@ -38,7 +38,7 @@ final class ModelIntrospector
         ];
     }
 
-    public function introspect(string $className, string $file, bool $useAst): ModelIntrospectionSchema
+    public function introspect(string $className, string $file): ModelIntrospectionSchema
     {
         $meta = ($this->astFacade ?? new AstFacade())->introspectModel($className, $file, $this->relationSqlModifiers());
         if ($meta !== null) {

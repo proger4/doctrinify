@@ -6,7 +6,8 @@ participant "ArtifactPersister" as Persist
 
 Operator -> Cmd: tools:orm:clean --config=config.yaml
 Cmd -> Svc: clean(config)
-Svc -> Persist: clean(xmlOutputPath, phpOutputPath)
+Svc -> Persist: clean(xmlOutputPath, '')
+Svc -> Persist: cleanGeneratedAstMembers(classFiles)
 Persist --> Svc: done
 Svc --> Cmd: success
 Cmd --> Operator: "Generated artifacts were cleaned."

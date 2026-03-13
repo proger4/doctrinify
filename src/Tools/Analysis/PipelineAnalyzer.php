@@ -8,6 +8,7 @@ use Doctrinify\Tools\Schemas\Pipeline\AnalyzedModelSchema;
 use Doctrinify\Tools\Schemas\Pipeline\AnalysisResultSchema;
 use Doctrinify\Tools\Schemas\Pipeline\Diagnostic;
 use Doctrinify\Tools\Schemas\Pipeline\IntrospectionResultSchema;
+use Doctrinify\Tools\Schemas\Pipeline\ModelHierarchySchema;
 use Doctrinify\Tools\Schemas\Pipeline\ModelIntrospectionSchema;
 use Doctrinify\Tools\Schemas\Pipeline\ModelRelationSchema;
 use Doctrinify\Tools\Schemas\Pipeline\RelationDecisionSchema;
@@ -19,7 +20,7 @@ final class PipelineAnalyzer
     public function analyze(IntrospectionResultSchema $input): AnalysisResultSchema
     {
         $models = $input->models;
-        $stiByRoot = $this->buildSingleTableInheritanceMap($models);
+        $stiByRoot = $this->buildSingleTableInheritanceMap($models, $input->hierarchies);
 
         $analyzedModels = [];
         foreach ($models as $className => $model) {
@@ -155,49 +156,44 @@ final class PipelineAnalyzer
 
     /**
      * @param array<string, ModelIntrospectionSchema> $metas
+     * @param list<ModelHierarchySchema> $hierarchies
      * @return array<string, array{table:string, classes:list<string>}>
      */
-    private function buildSingleTableInheritanceMap(array $metas): array
+    private function buildSingleTableInheritanceMap(array $metas, array $hierarchies): array
     {
-        $childrenByParent = [];
-        foreach ($metas as $class => $meta) {
-            if ($meta->extends !== null && isset($metas[$meta->extends])) {
-                $childrenByParent[$meta->extends][] = $class;
-            }
-        }
-
         $sti = [];
-        foreach ($childrenByParent as $parent => $children) {
-            $parentTable = $this->resolveTable($metas[$parent], $metas);
-            if ($parentTable === null) {
+        foreach ($hierarchies as $hierarchy) {
+            $table = null;
+            $concrete = [];
+
+            foreach ($hierarchy->classes as $className) {
+                $meta = $metas[$className] ?? null;
+                if ($meta === null) {
+                    continue;
+                }
+
+                $resolved = $this->resolveTable($meta, $metas);
+                if ($resolved === null) {
+                    continue;
+                }
+
+                if ($table === null) {
+                    $table = $resolved;
+                }
+
+                if ($resolved !== $table || $meta->isAbstract) {
+                    continue;
+                }
+
+                $concrete[] = $className;
+            }
+
+            if ($table === null || count($concrete) < 2) {
                 continue;
             }
 
-            $classes = [$parent];
-            $stack = $children;
-            while ($stack !== []) {
-                $current = array_shift($stack);
-                if ($current === null) {
-                    continue;
-                }
-                $classes[] = $current;
-                foreach ($childrenByParent[$current] ?? [] as $next) {
-                    $stack[] = $next;
-                }
-            }
-
-            $sameTable = true;
-            foreach ($classes as $class) {
-                $table = $this->resolveTable($metas[$class], $metas);
-                if ($table !== $parentTable) {
-                    $sameTable = false;
-                    break;
-                }
-            }
-
-            if ($sameTable && count($classes) > 1) {
-                $sti[$parent] = ['table' => $parentTable, 'classes' => $classes];
-            }
+            $root = $concrete[0];
+            $sti[$root] = ['table' => $table, 'classes' => $concrete];
         }
 
         return $sti;

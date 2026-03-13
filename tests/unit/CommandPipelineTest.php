@@ -50,7 +50,6 @@ final class CommandPipelineTest extends Unit
         $reportPath = $this->xmlOutputDir . '/mismatch-report.txt';
         $this->assertFileExists($reportPath);
         $report = (string) file_get_contents($reportPath);
-        $this->assertStringContainsString('regeneration strategy: overwrite_all', $report);
         $this->assertStringContainsString('relation `categoriesWithSql` rejected', $report);
     }
 

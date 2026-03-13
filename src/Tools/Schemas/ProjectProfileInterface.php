@@ -11,11 +11,7 @@ interface ProjectProfileInterface
      */
     public function getDoctrineXmlRootAttributes(): array;
 
-    public function getGeneratedPhpNamespace(): string;
-
     public function getDoctrineXmlFilenamePattern(): string;
-
-    public function getRegenerationStrategy(): string;
 
     public function shouldAddGeneratedMarker(): bool;
 

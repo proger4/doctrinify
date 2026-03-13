@@ -11,8 +11,6 @@ final readonly class GeneratedArtifactSchema
         public ?string $xmlFilename,
         public ?string $xml,
         public ?PhpPersistInstructionSchema $phpInstruction,
-        public ?string $phpFilename = null,
-        public ?string $php = null,
     ) {
     }
 }

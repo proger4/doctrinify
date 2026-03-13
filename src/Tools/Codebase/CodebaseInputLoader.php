@@ -8,6 +8,8 @@ use Doctrinify\Tools\AST\AstFacade;
 use Doctrinify\Tools\Config\ConfigLoader;
 use Doctrinify\Tools\Schemas\Pipeline\CodebaseInput;
 use Doctrinify\Tools\Schemas\Pipeline\GeneratorConfig;
+use Doctrinify\Tools\Schemas\Pipeline\ModelHierarchySchema;
+use Tree\Node\Node;
 
 final class CodebaseInputLoader
 {
@@ -24,15 +26,21 @@ final class CodebaseInputLoader
         $resolvedConfigPath = $loader->resolvePath($this->projectRoot, $configPath);
         $config = $loader->load($this->projectRoot, $configPath);
 
-        if (!isset($config['models_path'], $config['doctrine_xml_path'], $config['generated_php_path'])) {
+        if (!isset($config['models_path'], $config['doctrine_xml_path'])) {
             throw new \RuntimeException('Invalid config: missing required paths');
         }
 
         $modelsPath = $loader->resolvePath($this->projectRoot, (string) $config['models_path']);
         $classListPath = $this->resolveClassListPath($loader, $resolvedConfigPath, $config);
         $flags = is_array($config['flags'] ?? null) ? $config['flags'] : [];
-        $baseClasses = array_values(array_filter(array_map('strval', is_array($config['base_classes'] ?? null) ? $config['base_classes'] : [])));
-        $blacklist = array_values(array_filter(array_map('strval', is_array($config['blacklist'] ?? null) ? $config['blacklist'] : [])));
+        $baseClasses = array_values(array_filter(array_map(
+            fn (string $v): string => $this->normalizeClassPattern($v),
+            array_map('strval', is_array($config['base_classes'] ?? null) ? $config['base_classes'] : [])
+        )));
+        $blacklist = array_values(array_filter(array_map(
+            fn (string $v): string => $this->normalizeClassPattern($v),
+            array_map('strval', is_array($config['blacklist'] ?? null) ? $config['blacklist'] : [])
+        )));
 
         $defaultExcluded = ['vendor', 'tests', 'runtime'];
         $scanExcluded = is_array($config['model_scan_exclude_dirs'] ?? null)
@@ -45,33 +53,35 @@ final class CodebaseInputLoader
         );
 
         $classes = [];
-        $classFiles = [];
         $warnings = [];
+        $fileIndex = $this->scanPhpClasses($modelsPath, $scanExcluded);
 
         if ($requireClassList) {
-            $fileIndex = $this->scanPhpClasses($modelsPath, $scanExcluded);
-
             if (is_file($classListPath)) {
                 $classes = $this->loadClassList($classListPath);
-                foreach ($classes as $className) {
-                    if (isset($fileIndex[$className])) {
-                        $classFiles[$className] = $fileIndex[$className]['file'];
-                    }
-                }
             } else {
                 $warnings[] = sprintf('classlist not found (%s), fallback to models_path autoscan', $classListPath);
-                [$classes, $classFiles] = $this->autoDiscoverClasses($fileIndex, $baseClasses, $blacklist);
+                $classes = $this->autoDiscoverClasses($fileIndex, $baseClasses, $blacklist);
             }
         }
+        $classes = $this->sanitizeCandidateClasses($classes, $baseClasses, $blacklist);
+
+        $analysisClasses = $this->expandWithAncestors($classes, $fileIndex, $baseClasses, $blacklist);
+        $classFiles = [];
+        foreach ($analysisClasses as $className) {
+            if (isset($fileIndex[$className])) {
+                $classFiles[$className] = $fileIndex[$className]['file'];
+            }
+        }
+
+        $hierarchies = $this->buildHierarchies($analysisClasses, $fileIndex);
 
         return new CodebaseInput(
             config: new GeneratorConfig(
                 modelsPath: $modelsPath,
                 xmlOutputPath: $loader->resolvePath($this->projectRoot, (string) $config['doctrine_xml_path']),
-                phpOutputPath: $loader->resolvePath($this->projectRoot, (string) $config['generated_php_path']),
                 schemaPath: $schemaPath,
                 classListPath: $classListPath,
-                useAst: (bool) ($flags['use_ast_parsing'] ?? true),
                 generateXml: (bool) ($flags['generate_doctrine_xml'] ?? true),
                 generatePhp: (bool) ($flags['generate_php_accessors'] ?? true),
                 baseClasses: $baseClasses,
@@ -81,7 +91,36 @@ final class CodebaseInputLoader
             classes: $classes,
             classFiles: $classFiles,
             warnings: $warnings,
+            hierarchies: $hierarchies,
         );
+    }
+
+    /**
+     * @param list<string> $classes
+     * @param list<string> $baseClasses
+     * @param list<string> $blacklist
+     * @return list<string>
+     */
+    private function sanitizeCandidateClasses(array $classes, array $baseClasses, array $blacklist): array
+    {
+        $baseLookup = array_fill_keys($baseClasses, true);
+        $filtered = [];
+        foreach ($classes as $className) {
+            $name = trim($className);
+            if ($name === '') {
+                continue;
+            }
+
+            if (isset($baseLookup[$name]) || $this->matchesWildcardBlacklist($name, $blacklist)) {
+                continue;
+            }
+
+            $filtered[$name] = true;
+        }
+
+        $out = array_keys($filtered);
+        sort($out);
+        return $out;
     }
 
     /**
@@ -99,7 +138,7 @@ final class CodebaseInputLoader
 
     /**
      * @param list<string> $excludeDirs
-     * @return array<string, array{file:string,extends:?string,methodNames:list<string>}>
+     * @return array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}>
      */
     private function scanPhpClasses(string $modelsPath, array $excludeDirs): array
     {
@@ -141,6 +180,7 @@ final class CodebaseInputLoader
                 'file' => $fileInfo->getPathname(),
                 'extends' => $parsed['extends'],
                 'methodNames' => $parsed['methodNames'],
+                'isAbstract' => $parsed['isAbstract'],
             ];
         }
 
@@ -149,7 +189,7 @@ final class CodebaseInputLoader
     }
 
     /**
-     * @return array{fqn:string,extends:?string,methodNames:list<string>}|null
+     * @return array{fqn:string,extends:?string,methodNames:list<string>,isAbstract:bool}|null
      */
     private function parsePhpClassHeader(string $filePath): ?array
     {
@@ -158,15 +198,14 @@ final class CodebaseInputLoader
     }
 
     /**
-     * @param array<string, array{file:string,extends:?string,methodNames:list<string>}> $fileIndex
+     * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
      * @param list<string> $baseClasses
      * @param list<string> $blacklist
-     * @return array{0:list<string>,1:array<string,string>}
+     * @return list<string>
      */
     private function autoDiscoverClasses(array $fileIndex, array $baseClasses, array $blacklist): array
     {
         $classes = [];
-        $classFiles = [];
         $ast = $this->astFacade ?? new AstFacade();
 
         $baseLookup = array_fill_keys($baseClasses, true);
@@ -189,7 +228,6 @@ final class CodebaseInputLoader
             if (is_string($extends) && $extends !== '') {
                 if (isset($baseLookup[$extends])) {
                     $classes[] = $fqn;
-                    $classFiles[$fqn] = $meta['file'];
                     continue;
                 }
 
@@ -197,19 +235,109 @@ final class CodebaseInputLoader
                 $extendsShort = end($parts) ?: $extends;
                 if (isset($baseShortLookup[$extendsShort])) {
                     $classes[] = $fqn;
-                    $classFiles[$fqn] = $meta['file'];
                     continue;
                 }
             }
 
             if ($ast->hasModelHeuristics($meta['methodNames'])) {
                 $classes[] = $fqn;
-                $classFiles[$fqn] = $meta['file'];
             }
         }
 
         sort($classes);
-        return [$classes, $classFiles];
+        return $classes;
+    }
+
+    /**
+     * @param list<string> $classes
+     * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
+     * @param list<string> $baseClasses
+     * @param list<string> $blacklist
+     * @return list<string>
+     */
+    private function expandWithAncestors(array $classes, array $fileIndex, array $baseClasses, array $blacklist): array
+    {
+        $lookup = array_fill_keys($classes, true);
+        $baseLookup = array_fill_keys($baseClasses, true);
+
+        $stack = $classes;
+        while ($stack !== []) {
+            $className = array_pop($stack);
+            if (!is_string($className) || !isset($fileIndex[$className])) {
+                continue;
+            }
+
+            $parent = $fileIndex[$className]['extends'];
+            if (!is_string($parent) || $parent === '') {
+                continue;
+            }
+
+            if (isset($baseLookup[$parent]) || $this->matchesWildcardBlacklist($parent, $blacklist)) {
+                continue;
+            }
+
+            if (isset($fileIndex[$parent]) && !isset($lookup[$parent])) {
+                $lookup[$parent] = true;
+                $stack[] = $parent;
+            }
+        }
+
+        $out = array_keys($lookup);
+        sort($out);
+        return $out;
+    }
+
+    /**
+     * @param list<string> $classes
+     * @param array<string, array{file:string,extends:?string,methodNames:list<string>,isAbstract:bool}> $fileIndex
+     * @return list<ModelHierarchySchema>
+     */
+    private function buildHierarchies(array $classes, array $fileIndex): array
+    {
+        if ($classes === []) {
+            return [];
+        }
+
+        $classLookup = array_fill_keys($classes, true);
+        $nodes = [];
+        foreach ($classes as $className) {
+            $nodes[$className] = new Node($className);
+        }
+
+        $roots = [];
+        foreach ($classes as $className) {
+            $parent = $fileIndex[$className]['extends'] ?? null;
+            if (is_string($parent) && $parent !== '' && isset($classLookup[$parent])) {
+                $nodes[$parent]->addChild($nodes[$className]);
+                continue;
+            }
+
+            $roots[] = $className;
+        }
+
+        sort($roots);
+        $hierarchies = [];
+        foreach ($roots as $rootClass) {
+            $ordered = [];
+            $this->collectPreOrder($nodes[$rootClass], $ordered);
+            $hierarchies[] = new ModelHierarchySchema($rootClass, $ordered);
+        }
+
+        return $hierarchies;
+    }
+
+    private function collectPreOrder(Node $node, array &$ordered): void
+    {
+        $value = $node->getValue();
+        if (is_string($value) && $value !== '') {
+            $ordered[] = $value;
+        }
+
+        foreach ($node->getChildren() as $child) {
+            if ($child instanceof Node) {
+                $this->collectPreOrder($child, $ordered);
+            }
+        }
     }
 
     /**
@@ -224,6 +352,16 @@ final class CodebaseInputLoader
         }
 
         return false;
+    }
+
+    private function normalizeClassPattern(string $value): string
+    {
+        $trimmed = trim($value);
+        while (str_contains($trimmed, '\\\\')) {
+            $trimmed = str_replace('\\\\', '\\', $trimmed);
+        }
+
+        return $trimmed;
     }
 
     /**

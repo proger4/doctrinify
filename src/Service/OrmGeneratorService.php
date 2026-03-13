@@ -68,28 +68,30 @@ final class OrmGeneratorService
         $codebase = $this->codebaseLoader->load($configPath, true);
 
         $models = [];
-        foreach ($codebase->classes as $className) {
+        foreach ($codebase->classFiles as $className => $file) {
             if (in_array($className, $codebase->config->baseClasses, true)) {
                 continue;
             }
-
-            $short = $this->shortClassName($className);
-            $file = $codebase->classFiles[$className] ?? ($codebase->config->modelsPath . '/' . $short . '.php');
             if (!is_file($file)) {
                 throw new \RuntimeException(sprintf('Model file not found for %s: %s', $className, $file));
             }
 
-            $models[$className] = $this->modelIntrospector->introspect($className, $file, $codebase->config->useAst);
+            $models[$className] = $this->modelIntrospector->introspect($className, $file);
         }
 
         $database = $this->databaseIntrospector->introspect($codebase->config->schemaPath);
-        $introspection = new IntrospectionResultSchema($models, $database);
+        $introspection = new IntrospectionResultSchema($models, $database, $codebase->hierarchies);
         $analysis = $this->analyzer->analyze($introspection);
 
         $schemaIndex = $this->indexTablesCaseInsensitive($database->tables);
         $artifacts = [];
 
-        foreach ($analysis->models as $className => $analyzedModel) {
+        foreach ($codebase->classes as $className) {
+            $analyzedModel = $analysis->models[$className] ?? null;
+            if ($analyzedModel === null || $analyzedModel->model->isAbstract) {
+                continue;
+            }
+
             if ($analyzedModel->resolvedTable === null) {
                 continue;
             }
@@ -137,21 +139,14 @@ final class OrmGeneratorService
             );
         }
 
-        $reportDiagnostics = array_merge(
-            [new Diagnostic('info', sprintf('regeneration strategy: %s', $profile->getRegenerationStrategy()), ['code' => 'REGEN'])],
-            $analysis->diagnostics,
-        );
-
         $generation = new GenerationResultSchema(
             artifacts: $artifacts,
-            report: $this->analyzer->renderReport($reportDiagnostics),
+            report: $this->analyzer->renderReport($analysis->diagnostics),
         );
 
         $persisted = $this->persister->persist(
             result: $generation,
             xmlOutputPath: $codebase->config->xmlOutputPath,
-            phpOutputPath: $codebase->config->phpOutputPath,
-            profile: $profile,
         );
 
         return [

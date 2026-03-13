@@ -14,9 +14,7 @@ final class YamlProjectProfileTest extends Unit
         $projectRoot = dirname(__DIR__, 2);
         $profile = YamlProjectProfile::fromFile($projectRoot, 'tests/_data/mock/config.yaml');
 
-        $this->assertSame('app\\models', $profile->getGeneratedPhpNamespace());
         $this->assertSame('{class}.orm.xml', $profile->getDoctrineXmlFilenamePattern());
-        $this->assertSame('overwrite_all', $profile->getRegenerationStrategy());
         $this->assertTrue($profile->shouldAddGeneratedMarker());
         $this->assertFalse($profile->shouldEmbedDiagnostics());
 
@@ -29,9 +27,7 @@ final class YamlProjectProfileTest extends Unit
     {
         $profile = new YamlProjectProfile([]);
 
-        $this->assertSame('generated\\classes', $profile->getGeneratedPhpNamespace());
         $this->assertSame('{class}.orm.xml', $profile->getDoctrineXmlFilenamePattern());
-        $this->assertSame('overwrite_all', $profile->getRegenerationStrategy());
         $this->assertTrue($profile->shouldAddGeneratedMarker());
         $this->assertFalse($profile->shouldEmbedDiagnostics());
     }

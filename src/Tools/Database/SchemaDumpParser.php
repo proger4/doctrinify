@@ -35,10 +35,14 @@ final class SchemaDumpParser
     public function parseSql(string $sql): DatabaseIntrospectionDto
     {
         if ($this->looksLikeOracleDump($sql)) {
-            return $this->oracleParser->parseSql($sql);
+            $parsed = $this->oracleParser->parseSql($sql);
+            $this->assertParsedTables($sql, $parsed);
+            return $parsed;
         }
 
-        return $this->parseMysqlStyleSql($sql);
+        $parsed = $this->parseMysqlStyleSql($sql);
+        $this->assertParsedTables($sql, $parsed);
+        return $parsed;
     }
 
     private function looksLikeOracleDump(string $sql): bool
@@ -195,5 +199,17 @@ final class SchemaDumpParser
         sort($right);
         return $left === $right;
     }
-}
 
+    private function assertParsedTables(string $sql, DatabaseIntrospectionDto $parsed): void
+    {
+        if (trim($sql) === '') {
+            return;
+        }
+
+        if ($parsed->tables !== []) {
+            return;
+        }
+
+        throw new \RuntimeException('Schema parser found zero tables. Check SQL format or parser mode.');
+    }
+}

@@ -4,7 +4,6 @@ base_classes:
   - 'app\\models\\BaseModel'
 
 doctrine_xml_path: 'generated/doctrine'
-generated_php_path: 'generated/classes'
 
 schema_path: 'tests/_data/mock/database/schema.sql'
 
@@ -20,7 +19,6 @@ model_scan_exclude_dirs:
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
-  use_ast_parsing: true
 
 project_profile:
   doctrine_xml:
@@ -29,17 +27,6 @@ project_profile:
       xmlns:xsi: "http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation: "http://doctrine-project.org/schemas/orm/doctrine-mapping https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd"
     filename_pattern: "{class}.orm.xml"
-  generated_php:
-    namespace: "generated\\classes"
   regeneration:
-    strategy: "overwrite_all"
     add_generated_marker: true
     embed_diagnostics: false
-
-tools:
-  ai:
-    task_storage_root: 'var/tasks'
-    xlsx_task_file: 'src/Tools/Tasks/test.xlsx'
-    default_report_open: true
-    weak_model_mode: true
-    max_input_length: 12000

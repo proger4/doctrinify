@@ -4,7 +4,6 @@ base_classes:
   - 'app\\models\\BaseModel'
 
 doctrine_xml_path: 'tests/_output/generated/doctrine'
-generated_php_path: 'tests/_output/sandbox/models'
 
 schema_path: 'tests/_data/mock/database/schema.sql'
 
@@ -21,7 +20,6 @@ flags:
   best_effort: true
   generate_doctrine_xml: true
   generate_php_accessors: true
-  use_ast_parsing: true
   dump_schemas: true
 
 primary_key_strategy: 'database'
@@ -38,9 +36,6 @@ project_profile:
     root_attributes:
       xmlns: "http://doctrine-project.org/schemas/orm/doctrine-mapping"
     filename_pattern: "{class}.orm.xml"
-  generated_php:
-    namespace: "app\\models"
   regeneration:
-    strategy: "overwrite_all"
     add_generated_marker: true
     embed_diagnostics: false

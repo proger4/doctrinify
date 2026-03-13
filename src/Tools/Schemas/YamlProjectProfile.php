@@ -46,26 +46,10 @@ final class YamlProjectProfile implements ProjectProfileInterface
         return $result !== [] ? $result : self::DEFAULT_ROOT_ATTRIBUTES;
     }
 
-    public function getGeneratedPhpNamespace(): string
-    {
-        $value = $this->config['project_profile']['generated_php']['namespace'] ?? 'generated\\classes';
-        return is_string($value) && $value !== '' ? $value : 'generated\\classes';
-    }
-
     public function getDoctrineXmlFilenamePattern(): string
     {
         $value = $this->config['project_profile']['doctrine_xml']['filename_pattern'] ?? '{class}.orm.xml';
         return is_string($value) && $value !== '' ? $value : '{class}.orm.xml';
-    }
-
-    public function getRegenerationStrategy(): string
-    {
-        $value = $this->config['project_profile']['regeneration']['strategy'] ?? 'overwrite_all';
-        if (!is_string($value)) {
-            return 'overwrite_all';
-        }
-
-        return in_array($value, ['overwrite_all', 'preserve_custom'], true) ? $value : 'overwrite_all';
     }
 
     public function shouldAddGeneratedMarker(): bool

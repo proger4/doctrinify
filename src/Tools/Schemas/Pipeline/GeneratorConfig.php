@@ -14,10 +14,8 @@ final readonly class GeneratorConfig
     public function __construct(
         public string $modelsPath,
         public string $xmlOutputPath,
-        public string $phpOutputPath,
         public string $schemaPath,
         public string $classListPath,
-        public bool $useAst,
         public bool $generateXml,
         public bool $generatePhp,
         public array $baseClasses,

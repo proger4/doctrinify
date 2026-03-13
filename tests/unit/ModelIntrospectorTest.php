@@ -15,7 +15,7 @@ final class ModelIntrospectorTest extends Unit
         $file = $projectRoot . '/tests/_data/mock/models/Product.php';
 
         $introspector = new ModelIntrospector();
-        $meta = $introspector->introspect('app\\models\\Product', $file, true);
+        $meta = $introspector->introspect('app\\models\\Product', $file);
 
         $target = null;
         foreach ($meta->relations as $relation) {

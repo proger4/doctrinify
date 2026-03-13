@@ -108,12 +108,10 @@ models_path: 'tests/_output/sandbox/models_custom'
 base_classes:
   - 'app\\\\models\\\\BaseModel'
 doctrine_xml_path: 'tests/_output/generated/doctrine_custom'
-generated_php_path: 'tests/_output/sandbox/models_custom'
 schema_path: 'tests/_data/mock/database/schema.sql'
 flags:
   generate_doctrine_xml: true
   generate_php_accessors: true
-  use_ast_parsing: true
 project_profile:
   doctrine_xml:
     root_attributes:
@@ -121,10 +119,7 @@ project_profile:
       xmlns:xsi: "http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation: "http://doctrine-project.org/schemas/orm/doctrine-mapping https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd"
     filename_pattern: "map_{class}.xml"
-  generated_php:
-    namespace: "app\\\\models"
   regeneration:
-    strategy: "overwrite_all"
     add_generated_marker: true
     embed_diagnostics: false
 YAML;
@@ -137,6 +132,54 @@ YAML;
         $this->assertFileExists($xmlFile);
         $product = (string) file_get_contents($customModels . '/Product.php');
         $this->assertStringContainsString('function getName', $product);
+    }
+
+    public function testHierarchyWithAbstractOrderClassesGeneratesOnlyConcreteXml(): void
+    {
+        $modelsDir = $this->projectRoot . '/tests/_output/hierarchy/models';
+        $xmlDir = $this->projectRoot . '/tests/_output/hierarchy/doctrine';
+        $schemaPath = $this->projectRoot . '/tests/_output/hierarchy/schema.sql';
+        $configPath = $this->projectRoot . '/tests/_output/hierarchy/config.yaml';
+        $classlistPath = $this->projectRoot . '/tests/_output/hierarchy/classlist.txt';
+
+        $this->resetDir($modelsDir);
+        @mkdir($xmlDir, 0777, true);
+        file_put_contents($schemaPath, "CREATE TABLE `order` (\n  `order_id` INT NOT NULL,\n  `status` VARCHAR(20) NULL,\n  PRIMARY KEY (`order_id`)\n) ENGINE=InnoDB;\n");
+
+        file_put_contents($modelsDir . '/BaseModel.php', "<?php\nnamespace app\\models;\nabstract class BaseModel {}\n");
+        file_put_contents($modelsDir . '/AbstractOrder.php', "<?php\nnamespace app\\models;\nabstract class AbstractOrder extends BaseModel { public static function tableName(){ return 'order'; } }\n");
+        file_put_contents($modelsDir . '/AbstractRegionalOrder.php', "<?php\nnamespace app\\models;\nabstract class AbstractRegionalOrder extends AbstractOrder {}\n");
+        file_put_contents($modelsDir . '/RetailOrder.php', "<?php\nnamespace app\\models;\nclass RetailOrder extends AbstractRegionalOrder {}\n");
+        file_put_contents($modelsDir . '/WholesaleOrder.php', "<?php\nnamespace app\\models;\nclass WholesaleOrder extends AbstractRegionalOrder {}\n");
+
+        file_put_contents($classlistPath, "app\\models\\RetailOrder\napp\\models\\WholesaleOrder\n");
+
+        $config = <<<YAML
+models_path: 'tests/_output/hierarchy/models'
+classlist_path: 'tests/_output/hierarchy/classlist.txt'
+base_classes:
+  - 'app\\\\models\\\\BaseModel'
+doctrine_xml_path: 'tests/_output/hierarchy/doctrine'
+schema_path: 'tests/_output/hierarchy/schema.sql'
+flags:
+  generate_doctrine_xml: true
+  generate_php_accessors: true
+project_profile:
+  doctrine_xml:
+    filename_pattern: '{class}.orm.xml'
+  regeneration:
+    add_generated_marker: true
+    embed_diagnostics: false
+YAML;
+        file_put_contents($configPath, $config);
+
+        $this->service->clean($configPath);
+        $this->service->generate($configPath);
+
+        $this->assertFileExists($xmlDir . '/RetailOrder.orm.xml');
+        $this->assertFileExists($xmlDir . '/WholesaleOrder.orm.xml');
+        $this->assertFileDoesNotExist($xmlDir . '/AbstractOrder.orm.xml');
+        $this->assertFileDoesNotExist($xmlDir . '/AbstractRegionalOrder.orm.xml');
     }
 
     /**

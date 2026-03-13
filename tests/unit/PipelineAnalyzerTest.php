@@ -18,6 +18,7 @@ final class PipelineAnalyzerTest extends Unit
         $model = new ModelIntrospectionSchema(
             className: 'app\\models\\X',
             extends: null,
+            isAbstract: false,
             table: 'x',
             relations: [
                 new ModelRelationSchema(

@@ -15,6 +15,7 @@ final readonly class ModelIntrospectionSchema
     public function __construct(
         public string $className,
         public ?string $extends,
+        public bool $isAbstract,
         public ?string $table,
         public array $relations,
         public ?string $discriminator,

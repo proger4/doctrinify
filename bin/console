@@ -3,8 +3,6 @@
 
 declare(strict_types=1);
 
-use Doctrinify\Command\AiTaskExecuteCommand;
-use Doctrinify\Command\BuildTaskReportCommand;
 use Doctrinify\Command\CleanCommand;
 use Doctrinify\Command\GenerateCommand;
 use Doctrinify\Command\PrepareSandboxCommand;
@@ -16,6 +14,4 @@ $application = new Application('Doctrinify');
 $application->add(new GenerateCommand());
 $application->add(new CleanCommand());
 $application->add(new PrepareSandboxCommand());
-$application->add(new AiTaskExecuteCommand());
-$application->add(new BuildTaskReportCommand());
 $application->run();

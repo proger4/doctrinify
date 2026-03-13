@@ -37,11 +37,7 @@ final class PhpAccessorCodeGenerator
 
         $headers = [];
         if ($profile->shouldAddGeneratedMarker()) {
-            $headers[] = sprintf(
-                '%s (strategy=%s, command=tools:orm:generate, version=dev)',
-                self::GENERATED_MARKER,
-                $profile->getRegenerationStrategy()
-            );
+            $headers[] = sprintf('%s (command=tools:orm:generate, version=dev)', self::GENERATED_MARKER);
         }
 
         if ($profile->shouldEmbedDiagnostics() && $diagnostics !== []) {
@@ -51,10 +47,8 @@ final class PhpAccessorCodeGenerator
         }
 
         return new PhpPersistInstructionSchema(
-            mode: 'ast_nodes',
             targetPath: $targetPath,
             className: $className,
-            content: null,
             astNodes: $nodes,
             headerComments: $headers,
         );
