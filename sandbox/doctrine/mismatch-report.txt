@@ -1,8 +1,9 @@
 # Mismatch Report
-generated_at=2026-03-13T05:55:18+00:00
-count=4
+generated_at=2026-03-24T14:57:05+00:00
+count=5
 
-- [warning] local field `product_id` missing in `category` for relation `products` | code=RELATION,class=app%5Cmodels%5CCategory,relation=products
-- [warning] relation `itemsWithCondition` rejected: contains SQL query modifiers: addOrderBy, onCondition, condition | code=RELATION_REJECTED,class=app%5Cmodels%5COrder,relation=itemsWithCondition
-- [warning] relation `categoriesWithSql` rejected: contains SQL query modifiers: andWhere, joinType, joinWith, addOrderBy, order, orderBy, condition, where | code=RELATION_REJECTED,class=app%5Cmodels%5CProduct,relation=categoriesWithSql
-- [warning] local field `category_id` missing in `product` for relation `categories` | code=RELATION,class=app%5Cmodels%5CProduct,relation=categories
+- [warning] local field `product_id` missing in `CATEGORY` for relation `products` | code=RELATION,class=app%5Cmodels%5CCategory,relation=products
+- [warning] relation `itemsWithCondition` has SQL modifiers: contains SQL query modifiers: addOrderBy, onCondition, condition | code=RELATION_SQL_MODIFIERS,class=app%5Cmodels%5COrder,relation=itemsWithCondition
+- [warning] relation `categoriesWithSql` has SQL modifiers: contains SQL query modifiers: andWhere, joinType, joinWith, addOrderBy, order, orderBy, condition, where | code=RELATION_SQL_MODIFIERS,class=app%5Cmodels%5CProduct,relation=categoriesWithSql
+- [warning] local field `category_id` missing in `PRODUCT` for relation `categories` | code=RELATION,class=app%5Cmodels%5CProduct,relation=categories
+- [warning] local field `category_id` missing in `PRODUCT` for relation `categoriesWithSql` | code=RELATION,class=app%5Cmodels%5CProduct,relation=categoriesWithSql
