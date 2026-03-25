@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rare-edge-hypothesis-v1",
+  "type": "object",
+  "required": ["hypothesis_id", "run_id", "subject_key", "anchor_key", "kind", "proposed_code", "confidence", "why_missed_before", "evidence_refs", "missing_evidence", "recommended_action", "status"],
+  "properties": {
+    "hypothesis_id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "subject_key": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "kind": {"enum": ["rare_atomic", "combinational", "missing_context", "taxonomy_gap"]},
+    "proposed_code": {"type": "string"},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "why_missed_before": {"type": "string"},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "missing_evidence": {"type": "array", "items": {"type": "string"}},
+    "combination": {"type": "array", "items": {"type": "string"}},
+    "recommended_action": {"enum": ["auto", "manual", "defer"]},
+    "status": {"enum": ["new", "triaged", "promoted", "dismissed"]}
+  }
+}

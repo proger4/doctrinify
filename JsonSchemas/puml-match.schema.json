@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "puml-match-v1",
+  "type": "object",
+  "required": ["run_id", "puml_path", "items"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "puml_path": {"type": "string"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["entity_name", "matched_table", "matched_model", "confidence", "rationale", "evidence_refs"],
+        "properties": {
+          "entity_name": {"type": "string"},
+          "matched_table": {"type": ["string", "null"]},
+          "matched_model": {"type": ["string", "null"]},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "rationale": {"type": "string"},
+          "evidence_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

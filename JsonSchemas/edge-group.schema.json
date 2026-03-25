@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "edge-group-v1",
+  "type": "object",
+  "required": ["id", "run_id", "anchor_key", "title", "group_kind", "issue_ids", "counters", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "title": {"type": "string"},
+    "group_kind": {"enum": ["relation", "model", "usage", "inheritance", "mixed"]},
+    "issue_ids": {"type": "array", "items": {"type": "string"}},
+    "counters": {
+      "type": "object",
+      "required": ["total", "blocking", "warning", "manual", "unknown"],
+      "properties": {
+        "total": {"type": "integer"},
+        "blocking": {"type": "integer"},
+        "warning": {"type": "integer"},
+        "manual": {"type": "integer"},
+        "unknown": {"type": "integer"}
+      }
+    },
+    "status": {"enum": ["ok", "review", "blocked"]}
+  }
+}

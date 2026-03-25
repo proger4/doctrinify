@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prompt-context-v1",
+  "type": "object",
+  "required": ["run_id", "anchor_key", "task_kind", "model", "issues", "taxonomy", "output_contract"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "task_kind": {"type": "string"},
+    "model": {
+      "type": "object",
+      "required": ["fqcn", "table_name"],
+      "properties": {
+        "fqcn": {"type": "string"},
+        "table_name": {"type": "string"},
+        "tree": true
+      }
+    },
+    "issues": {"type": "array", "items": true},
+    "sql_facts": {"type": "array", "items": {"type": "string"}},
+    "yii_facts": {"type": "array", "items": {"type": "string"}},
+    "usage_facts": {"type": "array", "items": {"type": "string"}},
+    "taxonomy": {"type": "array", "items": {"type": "string"}},
+    "output_contract": {"type": "string"}
+  }
+}

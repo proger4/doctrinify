@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "artifact-v1",
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "run_id",
+    "step_name",
+    "artifact_key",
+    "artifact_type",
+    "content_hash",
+    "created_at"
+  ],
+  "properties": {
+    "artifact_id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "step_name": {"type": "string"},
+    "artifact_key": {"type": "string"},
+    "artifact_type": {"type": "string"},
+    "file_path": {"type": ["string", "null"]},
+    "content_hash": {"type": "string"},
+    "schema_id": {"type": ["string", "null"]},
+    "created_at": {"type": "string"},
+    "payload_json": {
+      "type": ["object", "array", "null"]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "llm-task-context-v1",
+  "type": "object",
+  "required": ["run_id", "task_kind", "output_contract", "issues", "taxonomy"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "task_kind": {"type": "string"},
+    "output_contract": {"type": "string"},
+    "anchor_key": {"type": ["string", "null"]},
+    "puml_path": {"type": ["string", "null"]},
+    "model": {
+      "type": ["object", "null"],
+      "properties": {
+        "fqcn": {"type": ["string", "null"]},
+        "table_name": {"type": ["string", "null"]},
+        "tree": true
+      },
+      "additionalProperties": true
+    },
+    "issues": {"type": "array", "items": true},
+    "taxonomy": {"type": "array", "items": {"type": "string"}},
+    "sql_facts": {"type": "array", "items": {"type": "string"}},
+    "yii_facts": {"type": "array", "items": {"type": "string"}},
+    "usage_facts": {"type": "array", "items": {"type": "string"}},
+    "context_elements": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "retrieval_plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "source_artifacts": {
+      "type": ["object", "null"],
+      "additionalProperties": {"type": "string"}
+    }
+  }
+}

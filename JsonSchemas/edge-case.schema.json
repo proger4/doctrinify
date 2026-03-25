@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "edge-case-v1",
+  "type": "object",
+  "required": ["id", "run_id", "code", "code_parts", "severity", "decision", "fixability", "subject_type", "subject_key", "anchor_key", "message", "impact", "claim", "evidence", "fingerprint"],
+  "properties": {
+    "id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "code": {"type": "string"},
+    "code_parts": {
+      "type": "object",
+      "required": ["about", "criticality", "name", "decision_type"],
+      "properties": {
+        "about": {"enum": ["MODEL", "FIELD", "RELATION", "INHERITANCE", "DISCRIMINATOR", "USAGE"]},
+        "criticality": {"enum": ["WARNING", "BLOCKING"]},
+        "name": {"type": "string"},
+        "decision_type": {"enum": ["AUTO", "MANUAL", "DEFER", "INVESTIGATE"]}
+      }
+    },
+    "severity": {"enum": ["warning", "blocking"]},
+    "decision": {"enum": ["auto", "manual", "defer"]},
+    "fixability": {"enum": ["auto", "manual", "investigate"]},
+    "subject_type": {"enum": ["model", "relation_family", "relation_variant", "field", "usage_hotspot", "inheritance", "discriminator"]},
+    "subject_key": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "message": {"type": "string"},
+    "impact": {"type": "string"},
+    "claim": {"type": "string"},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "ref", "summary"],
+        "properties": {
+          "source": {"enum": ["sql", "yii", "usage", "agent", "manual"]},
+          "ref": {"type": "string"},
+          "summary": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "payload_json": true
+        }
+      }
+    },
+    "fingerprint": {"type": "string"},
+    "triage_status": {"enum": ["new", "triaged", "promoted", "dismissed"]},
+    "promoted_code": {"type": "string"}
+  }
+}

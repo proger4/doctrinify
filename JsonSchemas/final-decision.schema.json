@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "final-decision-v1",
+  "type": "object",
+  "required": ["run_id", "anchor_key", "final_decision", "approved_by", "evidence_refs"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "final_decision": {"enum": ["auto", "manual", "defer"]},
+    "final_codes": {"type": "array", "items": {"type": "string"}},
+    "approved_by": {"enum": ["human", "classic", "hybrid", "llm"]},
+    "note": {"type": ["string", "null"]},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}}
+  }
+}

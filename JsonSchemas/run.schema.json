@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-v1",
+  "type": "object",
+  "required": ["run_id", "scope_id", "mode", "stage", "status", "started_at"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "scope_id": {"type": "string"},
+    "mode": {"enum": ["classic", "hybrid", "classic+ai"]},
+    "stage": {"type": "string"},
+    "status": {"enum": ["new", "running", "completed", "failed", "reused"]},
+    "baseline_run_id": {"type": ["string", "null"]},
+    "started_at": {"type": "string"},
+    "finished_at": {"type": ["string", "null"]}
+  }
+}

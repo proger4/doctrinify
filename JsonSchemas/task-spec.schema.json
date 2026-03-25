@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "task-spec-v1",
+  "type": "object",
+  "required": ["task_id", "algorithm", "subject_type", "subject_id", "options"],
+  "properties": {
+    "task_id": {"type": "string"},
+    "algorithm": {"type": "string"},
+    "subject_type": {"type": "string"},
+    "subject_id": {"type": "string"},
+    "options": {"type": "object", "additionalProperties": true}
+  }
+}

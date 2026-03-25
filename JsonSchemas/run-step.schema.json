@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-step-v1",
+  "type": "object",
+  "required": ["run_id", "step_name", "step_version", "input_hash", "status", "started_at"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "step_name": {"type": "string"},
+    "step_version": {"type": "string"},
+    "input_hash": {"type": "string"},
+    "status": {"enum": ["new", "running", "completed", "failed", "reused"]},
+    "started_at": {"type": "string"},
+    "finished_at": {"type": ["string", "null"]},
+    "error_text": {"type": ["string", "null"]},
+    "primary_artifact_ref": {"type": ["string", "null"]}
+  }
+}

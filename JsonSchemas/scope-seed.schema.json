@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scope-seed-v1",
+  "type": "object",
+  "required": ["scope_id", "seed_type", "project_root"],
+  "properties": {
+    "scope_id": {"type": "string"},
+    "seed_type": {"enum": ["table_list", "schema_dump", "puml", "model_list", "mixed"]},
+    "project_root": {"type": "string"},
+    "schema_path": {"type": ["string", "null"]},
+    "puml_path": {"type": ["string", "null"]},
+    "table_names": {"type": "array", "items": {"type": "string"}},
+    "model_names": {"type": "array", "items": {"type": "string"}},
+    "usage_paths": {"type": "array", "items": {"type": "string"}},
+    "models_path": {"type": ["string", "null"]},
+    "classlist_path": {"type": ["string", "null"]},
+    "php8_bin": {"type": ["string", "null"]},
+    "php7_bin": {"type": ["string", "null"]},
+    "yiic_path": {"type": ["string", "null"]},
+    "llm_token_env": {"type": ["string", "null"]}
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ai-proposal-v1",
+  "type": "object",
+  "required": ["proposal_id", "run_id", "anchor_key", "engine", "decision", "rationale", "evidence_refs", "confidence"],
+  "properties": {
+    "proposal_id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "anchor_key": {"type": "string"},
+    "engine": {"type": "string"},
+    "decision": {"enum": ["auto", "manual", "defer"]},
+    "proposed_codes": {"type": "array", "items": {"type": "string"}},
+    "rationale": {"type": "string"},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}

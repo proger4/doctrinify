@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model-v1",
+  "type": "object",
+  "required": ["model_id", "run_id", "fqcn", "file_path", "table_name", "primary_key", "tree", "relation_names", "status"],
+  "properties": {
+    "model_id": {"type": "string"},
+    "run_id": {"type": "string"},
+    "fqcn": {"type": "string"},
+    "short_name": {"type": "string"},
+    "file_path": {"type": "string"},
+    "table_name": {"type": "string"},
+    "resolved_table_name": {"type": ["string", "null"]},
+    "extends": {"type": ["string", "null"]},
+    "is_abstract": {"type": "boolean"},
+    "primary_key": {"type": "array", "items": {"type": "string"}},
+    "relation_names": {"type": "array", "items": {"type": "string"}},
+    "usage_refs": {"type": "array", "items": {"type": "string"}},
+    "php7_meta_status": {"enum": ["not_needed", "requested", "loaded", "failed"]},
+    "tree": {
+      "type": "object",
+      "required": ["root_fqcn", "parent_fqcn", "children_fqcns"],
+      "properties": {
+        "root_fqcn": {"type": "string"},
+        "parent_fqcn": {"type": ["string", "null"]},
+        "children_fqcns": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "status": {"enum": ["new", "ready", "review", "blocked"]}
+  }
+}
